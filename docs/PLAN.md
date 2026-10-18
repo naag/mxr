@@ -567,14 +567,23 @@ filters can come later if aliasing is audible at high resonance. The triangle is
 harmonics fall at 12 dB/octave, so it aliases very little).
 
 ### Phase 4: Audio engine & sound sources
-- [ ] AudioWorklet wrapper, engine lifecycle (start/suspend/resume), master volume, limiter,
+- [x] AudioWorklet wrapper, engine lifecycle (start/suspend/resume), master volume, limiter,
   analysers per tap, telemetry channel.
-- [ ] Riff sequencer (look-ahead scheduling on the audio clock) with the riffs from
+- [x] Riff sequencer (sample-accurate, in the audio thread) with the riffs from
   learning-content §D, plus the fretboard and keyboard input.
-- [ ] Bypass, MIX, DRY THRU FX, output modes (mono / wet-dry → L/R / stereo), freeze.
-- [ ] "Start sound" UX, mute, output meter, iOS hints.
-- [ ] Test hooks + E2E 7–8.
+- [x] Bypass, MIX, DRY THRU FX, output modes (mono / wet-dry → L/R / stereo), freeze.
+- [x] "Start sound" UX, mute, output meter, iOS hints.
+- [x] Test hooks + E2E 7–8.
 - **Done when:** all presets are playable with every source in all supported browsers.
+
+Notes: the worklet (`src/lib/audio/worklets/pedal.worklet.ts`) runs `pedal-dsp.ts` and the
+riff `Sequencer`; output 0 is stereo, output 1 carries the five tap channels for analysers.
+`src/lib/state.svelte.ts` holds the app-wide `pedal` and `audio` stores so sound continues
+across views. Keyboard notes use the Q and number rows (V and S stay free for layer holds).
+On phones the source bar is not sticky yet (it covered the pedal); Phase 9 makes it compact.
+Test hooks (`window.__MXR_TEST__`) exist only in `--mode test` builds; CI checks the production
+bundle. Firefox and WebKit run the `@smoke` audio test in CI; a listening review on real
+devices is still to do.
 
 ### Phase 4b: Calibration against the real MB301
 The owner has the real pedal, so the assumptions in `pedal-reference.md` get checked

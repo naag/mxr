@@ -1,9 +1,10 @@
 <script lang="ts">
   import { appName, appTagline, navItems } from '../../content/site'
+  import type { Snippet } from 'svelte'
   import type { RouteName } from '../../router'
   import BrandMark from './BrandMark.svelte'
 
-  let { current }: { current: RouteName } = $props()
+  let { current, end }: { current: RouteName; end?: Snippet } = $props()
 </script>
 
 <header
@@ -30,4 +31,7 @@
       >
     {/each}
   </nav>
+  {#if end}
+    <div class="ml-auto">{@render end()}</div>
+  {/if}
 </header>

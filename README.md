@@ -5,7 +5,7 @@ on screen and uses it to explain **how synthesizers make sound**, for people
 who aren't synth experts. Turn a knob and hear the change, watch the waveform and
 spectrum react, and follow the signal through the pedal.
 
-> **Status:** Phases 0–3 done (tooling, app shell, interactive pedal with presets and hidden layers, sound engine maths; not audible yet). Start with the plan, then look at the
+> **Status:** Phases 0–4 done: the pedal is playable and audible in the browser (riff player, fretboard, keyboard). Start with the plan, then look at the
 > [mockup](https://claude.ai/artifact/VLFJfYPHoXTgFQucm1bFJD) (private artifact; source snapshot in [`docs/mockup/`](docs/mockup/)).
 
 ## Documents

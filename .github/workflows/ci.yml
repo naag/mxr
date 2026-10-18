@@ -22,6 +22,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run check
+      - name: Production build has no test hooks
+        run: npm run build && ! grep -rl "__MXR_TEST__" dist
       - run: npx playwright install --with-deps chromium
       - run: npm test
 
