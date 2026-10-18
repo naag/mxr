@@ -650,4 +650,4 @@ against it instead of guessed from demo videos.
 | 6 | Language | **English only** |
 | 7 | Preset tuning | **Owner has a real MB301.** Calibration is Phase 4b |
 
-Still open: feedback on the mockup's look (pedal drawing, colors, type, layout density).
+The mockup look (pedal drawing, colors, type, layout) was approved on 2026-10-18.
