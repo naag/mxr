@@ -624,18 +624,40 @@ snapshot (`visuals.png`) has no committed baseline yet, same as Phase 1. The pla
 signal-chain strip is a preview of Phase 6's diagram.
 
 ### Phase 6: Under the hood (signal flow)
-- [ ] Signal-flow diagram (reference §9) with stage colors, active/inactive states,
+- [x] Signal-flow diagram (reference §9) with stage colors, active/inactive states,
   animated particles, click-to-inspect, and mini scopes per tap.
-- [ ] Dry-path and stereo routing visualized per OUTPUT MODE and DRY THRU FX.
+- [x] Dry-path and stereo routing visualized per OUTPUT MODE and DRY THRU FX.
 - **Done when:** a non-expert test user can point to "where the sound gets darker".
+  (The view opens on the filter stage, whose copy says so; the user test is still to do.)
+
+Notes: the model is `src/lib/viz/flow.ts` (stages, in/out taps, side inputs, `flowState()` for
+idle stages and routing), the view is `SignalFlow.svelte` + `FlowInspector.svelte`. The DSP has
+a new `chorus` tap (after chorus, before the compressor) so chorus and compressor show
+different waves; the snapshot keeps every tap so the diagram works with the sound off. The
+inspector has plain sliders for every parameter of a stage, via new machine events `set`,
+`setShape` and `setVoice`. Selecting a stage that has a scope tap also sets the Play scope's tap.
+`#/flow/<stage>` deep-links a stage. The gate has no separate tap: in this model it acts on note
+starts (GATE SENS), so its in and out waves are the same, and the inspector says so.
 
 ### Phase 7: Learn mode
-- [ ] Chapter framework: goal checks, focused controls, dimming, progress (persisted),
+- [x] Chapter framework: goal checks, focused controls, dimming, progress (persisted),
   next/prev, deep links.
-- [ ] Chapters 0–13 from `learning-content.md`, plus the additive-synthesis demo and LFO widget.
-- [ ] Glossary with inline illustrations and cross-links.
-- [ ] Tests: E2E 10, a11y scans of every chapter.
+- [x] Chapters 0–13 from `learning-content.md`, plus the additive-synthesis demo and LFO widget.
+- [x] Glossary with inline illustrations and cross-links.
+- [x] Tests: E2E 10, a11y scans of every chapter.
 - **Done when:** content is reviewed for plain language (no unexplained jargon).
+  (Copy written to the voice guidelines; owner review still to do.)
+
+Notes: chapters are data in `src/lib/learn/chapters.ts` (focus controls, visuals, starting sound,
+riff, goal checks) with their words in `src/lib/content/learn.ts`. A goal step is a predicate on
+an `Observation` of the pedal and the sound (`learn/goals.ts`); steps complete in order and stay
+done, so no timers are needed. `learn.test.ts` walks through every chapter to prove each one can
+be finished and doesn't finish itself. Progress lives in localStorage
+(`learn/progress.svelte.ts`). The pedal takes a `focus` list and dims the other controls (still
+usable). "Set up the sound" loads a chapter's starting patch into live mode (it says so). Copy
+links glossary terms with `[[term|words]]` (`learn/rich.ts`); the Reference view now lists every
+control per layer and the glossary, with `#/reference/<term>` deep links. Learn and Reference are
+lazy-loaded. Chapter 13 has short recipe cards; the full gallery is Phase 8.
 
 ### Phase 8: Presets gallery & expression
 - [ ] Preset recipe cards (key knobs tagged with chapters, era/instrument context).

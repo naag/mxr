@@ -4,6 +4,8 @@ export interface Route {
   name: RouteName
   /** Learn chapter, 0–13. Only set for the `learn` route. */
   chapter?: number
+  /** Optional sub-path: a flow stage (`#/flow/filter`) or a glossary term (`#/reference/cutoff`). */
+  item?: string
 }
 
 export const LAST_CHAPTER = 13
@@ -25,7 +27,11 @@ export function parseHash(hash: string): Route {
     const chapter = Number.isInteger(n) && n >= 0 && n <= LAST_CHAPTER ? n : 0
     return { name: 'learn', chapter }
   }
-  return { name: simple[head] ?? 'play' }
+  const name = simple[head] ?? 'play'
+  if ((name === 'flow' || name === 'reference') && arg && /^[a-z0-9-]+$/.test(arg)) {
+    return { name, item: arg }
+  }
+  return { name }
 }
 
 export function hrefFor(route: Route): string {
@@ -35,6 +41,6 @@ export function hrefFor(route: Route): string {
     case 'learn':
       return `#/learn/${route.chapter ?? 0}`
     default:
-      return `#/${route.name}`
+      return `#/${route.name}${route.item ? `/${route.item}` : ''}`
   }
 }

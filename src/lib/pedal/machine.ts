@@ -13,6 +13,7 @@ import {
   type GlobalParamId,
   type Layer,
   type ParamDef,
+  type ParamId,
   type PresetParamId,
 } from './params'
 import {
@@ -25,6 +26,7 @@ import {
   SHAPES,
   type Globals,
   type Patch,
+  type Shape,
 } from './presets'
 
 export const TIMING = {
@@ -83,6 +85,10 @@ export type MachineEvent =
   | { type: 'select'; preset: number }
   | { type: 'load'; patch: Patch }
   | { type: 'factoryReset' }
+  /** Direct edits from outside the pedal (flow inspector, Learn): any layer, no button hold. */
+  | { type: 'set'; param: ParamId; value: number }
+  | { type: 'setShape'; shape: Shape }
+  | { type: 'setVoice'; on: boolean }
 
 export function initialState(saved?: Patch[], globals?: Globals): MachineState {
   const list = saved ?? [initialLivePatch(), ...FACTORY_PRESETS.map(clonePatch)]
@@ -163,6 +169,18 @@ export function reduce(state: MachineState, event: MachineEvent, now: number): M
       saved[0] = clonePatch(patch)
       return { ...s, saved, preset: 0, current: patch, copy: null }
     }
+    case 'set':
+      return setParam(s, PARAM[event.param], event.value)
+    case 'setShape':
+      if (s.current.shape === event.shape) return s
+      return edit(s, (p) => {
+        p.shape = event.shape
+      })
+    case 'setVoice':
+      if (s.current.voiceOn === event.on) return s
+      return edit(s, (p) => {
+        p.voiceOn = event.on
+      })
     case 'factoryReset': {
       const fresh = initialState()
       return {
@@ -197,7 +215,7 @@ function turn(s: MachineState, knob: KnobId, raw: number): MachineState {
   const layer = activeLayer(s)
   const p = paramAt(knob, layer)
   const value = normalize(p, raw)
-  let next: MachineState = { ...s, pressed: markUsed(s.pressed, 'voice', 'shape') }
+  const next: MachineState = { ...s, pressed: markUsed(s.pressed, 'voice', 'shape') }
 
   // Manual: hold the footswitch and turn RESONANCE to max to make holds freeze the note;
   // to min to go back to preset scrolling.
@@ -207,15 +225,20 @@ function turn(s: MachineState, knob: KnobId, raw: number): MachineState {
     else if (value <= 0.01) next.footMode = 'scroll'
   }
 
+  return setParam(next, p, value)
+}
+
+/** Sets a parameter (global or per preset), snapped to its range and detents. */
+function setParam(s: MachineState, p: ParamDef, raw: number): MachineState {
+  const value = normalize(p, raw)
   if (p.global) {
-    if (next.globals[p.id as GlobalParamId] === value) return next
-    return { ...next, globals: { ...next.globals, [p.id]: value } }
+    if (s.globals[p.id as GlobalParamId] === value) return s
+    return { ...s, globals: { ...s.globals, [p.id]: value } }
   }
-  if (next.current.values[p.id as PresetParamId] === value) return next
-  next = edit(next, (patch) => {
+  if (s.current.values[p.id as PresetParamId] === value) return s
+  return edit(s, (patch) => {
     patch.values[p.id as PresetParamId] = value
   })
-  return next
 }
 
 function select(s: MachineState, preset: number, now: number): MachineState {

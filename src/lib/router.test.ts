@@ -16,6 +16,13 @@ describe('parseHash', () => {
     expect(parseHash(hash)).toEqual(route)
   })
 
+  it('reads a flow stage or a glossary term', () => {
+    expect(parseHash('#/flow/filter')).toEqual({ name: 'flow', item: 'filter' })
+    expect(parseHash('#/reference/low-pass')).toEqual({ name: 'reference', item: 'low-pass' })
+    expect(parseHash('#/reference/<script>')).toEqual({ name: 'reference' })
+    expect(parseHash('#/presets/x')).toEqual({ name: 'presets' })
+  })
+
   it('reads the Learn chapter', () => {
     expect(parseHash('#/learn/5')).toEqual({ name: 'learn', chapter: 5 })
     expect(parseHash('#/learn/13')).toEqual({ name: 'learn', chapter: 13 })
@@ -36,6 +43,8 @@ describe('hrefFor', () => {
       { name: 'learn', chapter: 7 },
       { name: 'presets' },
       { name: 'reference' },
+      { name: 'reference', item: 'cutoff' },
+      { name: 'flow', item: 'amp' },
     ] as const) {
       expect(parseHash(hrefFor(route))).toEqual(route)
     }

@@ -20,6 +20,9 @@ import { ampAttackMs, cutoffHz, envelopeTimes, PARAM, stepIndex } from '../pedal
 export type ScopeTap = 'osc' | 'filter' | 'amp' | 'out'
 export const SCOPE_TAPS: readonly ScopeTap[] = ['osc', 'filter', 'amp', 'out']
 
+/** Every tap the snapshot keeps: the scope's, plus the rest of the chain for the flow view. */
+export type SnapshotTap = ScopeTap | 'dry' | 'chorus' | 'fx' | 'left' | 'right'
+
 /** The note the computed views play: A1, 55 Hz, as in the mockup. */
 export const PREVIEW_MIDI = 33
 export const PREVIEW_VELOCITY = 0.8
@@ -73,7 +76,7 @@ export interface Snapshot {
   /** Time of the snapshot in the preview render. */
   at: number
   /** The newest WINDOW samples of each tap at the snapshot. */
-  taps: Record<ScopeTap, Float32Array>
+  taps: Record<SnapshotTap, Float32Array>
   cutoffNow: number
   envelope: EnvelopeCurve
   pitch: PitchCurve
@@ -183,7 +186,17 @@ export function computeSnapshot(settings: PedalSettings, riff: Riff, bpm: number
     sampleRate: sr,
     midi: PREVIEW_MIDI,
     at,
-    taps: { osc: window(r.osc), filter: window(r.filter), amp: window(r.amp), out: window(out) },
+    taps: {
+      dry: window(r.dry),
+      osc: window(r.osc),
+      filter: window(r.filter),
+      amp: window(r.amp),
+      chorus: window(r.chorus),
+      fx: window(r.fx),
+      out: window(out),
+      left: window(r.left),
+      right: window(r.right),
+    },
     cutoffNow: r.cutoffHz[end - 1],
     envelope: {
       dt: 1 / CONTROL_RATE,

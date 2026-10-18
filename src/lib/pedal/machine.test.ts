@@ -112,6 +112,39 @@ describe('knobs and layers', () => {
   })
 })
 
+describe('direct edits (flow inspector, Learn)', () => {
+  it('set any parameter whatever the layer, snapping stepped ones', () => {
+    rig.send({ type: 'set', param: 'glide', value: 0.4 })
+    rig.send({ type: 'set', param: 'tracking', value: 0.7 })
+    rig.send({ type: 'set', param: 'cutoff', value: 2 })
+    expect(activeLayer(rig.s)).toBe('main')
+    expect(rig.s.current.values.glide).toBe(0.4)
+    expect(rig.s.globals.tracking).toBe(0.5)
+    expect(rig.s.current.values.cutoff).toBe(1)
+  })
+
+  it('pick a shape and switch VOICE, flagging an edited preset', () => {
+    rig.send({ type: 'select', preset: 1 })
+    rig.send({ type: 'setShape', shape: 'square' })
+    rig.send({ type: 'setVoice', on: true })
+    expect(rig.s.current.shape).toBe('square')
+    expect(rig.s.current.voiceOn).toBe(true)
+    expect(isModified(rig.s)).toBe(true)
+  })
+
+  it('return the same state when nothing changes', () => {
+    const before = rig.s
+    rig.send({ type: 'setShape', shape: before.current.shape })
+    rig.send({ type: 'set', param: 'mix', value: before.current.values.mix })
+    expect(rig.s.current).toBe(before.current)
+  })
+
+  it('save live mode right away', () => {
+    rig.send({ type: 'set', param: 'resonance', value: 0.9 })
+    expect(rig.s.saved[0].values.resonance).toBe(0.9)
+  })
+})
+
 describe('VOICE and SHAPE buttons', () => {
   it('toggle on a tap', () => {
     rig.tap('voice')

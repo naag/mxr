@@ -4,12 +4,15 @@
   import AppFooter from './lib/components/ui/AppFooter.svelte'
   import AppHeader from './lib/components/ui/AppHeader.svelte'
   import { router } from './lib/router.svelte'
-  import { audio, pedalSettings } from './lib/state.svelte'
+  import { audio, computed, pedalSettings } from './lib/state.svelte'
+  import { FLOW_STAGE, type FlowStageId } from './lib/viz/flow'
   import FlowView from './views/FlowView.svelte'
-  import LearnView from './views/LearnView.svelte'
   import PlayView from './views/PlayView.svelte'
   import PresetsView from './views/PresetsView.svelte'
-  import ReferenceView from './views/ReferenceView.svelte'
+
+  // Learn and Reference carry most of the copy: load them when first opened (PLAN §5.6).
+  const learnView = () => import('./views/LearnView.svelte')
+  const referenceView = () => import('./views/ReferenceView.svelte')
 
   const route = $derived(router.route)
 
@@ -17,6 +20,15 @@
   $effect(() => {
     audio.setSettings(pedalSettings())
   })
+
+  // Re-render the computed visuals whenever the sound or the riff changes (every view uses them).
+  $effect(() => {
+    computed.request({ settings: pedalSettings(), riff: audio.riff, bpm: audio.bpm })
+  })
+
+  const flowStage = $derived(
+    route.item && route.item in FLOW_STAGE ? (route.item as FlowStageId) : null,
+  )
 </script>
 
 <div class="flex min-h-screen flex-col">
@@ -25,13 +37,17 @@
   </AppHeader>
   <main class="mx-auto w-full max-w-[1440px] flex-1 px-4 py-7 sm:px-7">
     {#if route.name === 'flow'}
-      <FlowView />
+      {#key flowStage}<FlowView stage={flowStage} />{/key}
     {:else if route.name === 'learn'}
-      <LearnView chapter={route.chapter ?? 0} />
+      {#await learnView() then { default: LearnView }}
+        <LearnView chapter={route.chapter ?? 0} />
+      {/await}
     {:else if route.name === 'presets'}
       <PresetsView />
     {:else if route.name === 'reference'}
-      <ReferenceView />
+      {#await referenceView() then { default: ReferenceView }}
+        <ReferenceView term={route.item ?? null} />
+      {/await}
     {:else}
       <PlayView />
     {/if}

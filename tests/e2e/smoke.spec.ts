@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test'
 const views = [
   { hash: '#/', nav: 'Play', heading: 'Turn a knob, hear and see what it does' },
   { hash: '#/flow', nav: 'Under the hood', heading: 'Follow the signal' },
-  { hash: '#/learn/0', nav: 'Learn', heading: 'How a synth makes sound' },
+  { hash: '#/learn/0', nav: 'Learn', heading: 'What this pedal does' },
   { hash: '#/presets', nav: 'Presets', heading: 'The eight factory sounds' },
   { hash: '#/reference', nav: 'Reference', heading: 'Every control on the pedal' },
 ]
@@ -35,8 +35,11 @@ test('navigates between views with the header @smoke', async ({ page }) => {
 
 test('deep links open the right view', async ({ page }) => {
   await page.goto('./#/learn/6')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('How a synth makes sound')
-  await expect(page.getByText('Chapter 6')).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Resonance: the singing peak')
+  await page.goto('./#/flow/amp')
+  await expect(page.getByTestId('flow-inspector')).toHaveAttribute('data-stage', 'amp')
+  await page.goto('./#/reference/cutoff')
+  await expect(page.locator('[data-term="cutoff"]')).toHaveAttribute('data-current', 'true')
 })
 
 test('has no horizontal scroll', async ({ page }) => {

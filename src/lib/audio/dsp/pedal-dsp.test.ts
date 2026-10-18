@@ -63,7 +63,7 @@ describe('every preset renders cleanly', () => {
   ]
   it.each(all)('%s', (_, patch) => {
     const r = renderOffline(settings(patch), riff, 1.6, SR)
-    for (const tap of ['left', 'right', 'dry', 'osc', 'filter', 'amp', 'fx'] as const) {
+    for (const tap of ['left', 'right', 'dry', 'osc', 'filter', 'amp', 'chorus', 'fx'] as const) {
       expect(r[tap].every(Number.isFinite)).toBe(true)
     }
     // Headroom before the master limiter (Phase 4).
@@ -86,6 +86,15 @@ describe('signal path', () => {
   it('MIX fully left is only the clean bass', () => {
     const r = renderOffline(plain({ mix: 0 }), riff, 1, SR)
     for (let i = SR * 0.1; i < SR * 0.9; i += 97) expect(r.left[i]).toBeCloseTo(r.dry[i], 3)
+  })
+
+  it('taps the chorus before the compressor: a clean copy of the amp with MOD off', () => {
+    const off = renderOffline(plain({ comp: clock(15) }), held, 0.5, SR)
+    for (let i = SR * 0.1; i < SR * 0.45; i += 89) expect(off.chorus[i]).toBeCloseTo(off.amp[i], 6)
+    // With chorus on, the delayed copies change the wave (difference RMS well above zero).
+    const on = renderOffline(plain({ mod: 1, modBlend: 0 }), held, 0.5, SR)
+    const diff = on.chorus.map((v, i) => v - on.amp[i])
+    expect(rms(slice(diff, 0.1, 0.45))).toBeGreaterThan(0.1 * rms(slice(on.amp, 0.1, 0.45)))
   })
 
   it('is deterministic', () => {
