@@ -12,6 +12,7 @@
   } from '../../pedal/knob'
   import type { KnobColor } from '../../pedal/layout'
   import { url, type DefIds } from './defs'
+  import { DoubleTap, noTouchScroll } from './touch'
 
   interface Props {
     x: number
@@ -56,6 +57,8 @@
   let hovered = $state(false)
   let focused = $state(false)
   let dragStart = { y: 0, value: 0 }
+  let moved = false
+  const doubleTap = new DoubleTap()
 
   const angle = $derived(angleFor(value))
   const showRing = $derived(dragging || hovered || focused)
@@ -70,17 +73,33 @@
     node.setPointerCapture(e.pointerId)
     node.focus({ preventScroll: true })
     dragStart = { y: e.clientY, value }
+    moved = false
     dragging = true
     e.preventDefault()
   }
 
   function pointerMove(e: PointerEvent) {
     if (!dragging) return
+    // A finger wobbles: only a real drag turns the knob, so a tap doesn't nudge it.
+    if (!moved && Math.abs(e.clientY - dragStart.y) < 3) return
+    moved = true
     const pixels = e.shiftKey ? DRAG_PIXELS * FINE_DRAG_FACTOR : DRAG_PIXELS
     onchange(clamp01(dragStart.value + (dragStart.y - e.clientY) / pixels))
   }
 
-  function pointerUp() {
+  function pointerUp(e: PointerEvent) {
+    // Mice get `dblclick`; touch and pen double taps are detected here.
+    if (
+      dragging &&
+      !moved &&
+      e.pointerType !== 'mouse' &&
+      doubleTap.tap(e.timeStamp, e.clientX, e.clientY)
+    )
+      onreset()
+    dragging = false
+  }
+
+  function pointerCancel() {
     dragging = false
   }
 
@@ -133,7 +152,7 @@
   onpointerdown={pointerDown}
   onpointermove={pointerMove}
   onpointerup={pointerUp}
-  onpointercancel={pointerUp}
+  onpointercancel={pointerCancel}
   onpointerenter={() => (hovered = true)}
   onpointerleave={() => (hovered = false)}
   onfocus={() => (focused = true)}
@@ -141,6 +160,7 @@
   onkeydown={keyDown}
   ondblclick={onreset}
   {@attach wheel}
+  {@attach noTouchScroll}
 >
   <circle r="104" fill="transparent" />
   <g class="ring" opacity={showRing ? 1 : highlighted ? 0.7 : 0} aria-hidden="true">
@@ -217,6 +237,7 @@
   .knob {
     cursor: ns-resize;
     touch-action: none;
+    -webkit-touch-callout: none;
     outline: none;
   }
   .ring {

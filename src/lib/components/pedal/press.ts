@@ -1,4 +1,5 @@
 import type { Attachment } from 'svelte/attachments'
+import { noTouchScroll } from './touch'
 
 export interface PressHandlers {
   ondown: () => void
@@ -76,8 +77,11 @@ export function pressable(get: () => PressHandlers): Attachment<SVGElement> {
       ],
     ]
     for (const [type, fn] of listeners) node.addEventListener(type, fn)
+    // Holding a button (VOICE + turn, footswitch scroll) must not become a page scroll.
+    const untouch = noTouchScroll(node)
     return () => {
       for (const [type, fn] of listeners) node.removeEventListener(type, fn)
+      untouch?.()
     }
   }
 }

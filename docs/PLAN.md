@@ -691,7 +691,11 @@ cutoff over time, or scrolls live from the output analyser at 50 columns/s.
 
 Notes: phones get a swipeable visual strip with tabs (Wave · Levels · Spectrum · Envelope ·
 Pitch), a scrollable nav row and a compact sticky source bar; `scroll-padding-bottom` keeps
-focused controls clear of the bar. Round pedal buttons have 44 px touch targets. With reduced
+focused controls clear of the bar. Round pedal buttons have 44 px touch targets. Browsers ignore `touch-action: none` on SVG
+child elements, so a finger on a knob used to scroll the page and cancel the drag; knobs,
+buttons and the expression rocker now cancel `touchmove` in a non-passive listener
+(`components/pedal/touch.ts`), and knobs detect double taps themselves. `touch.spec.ts` drags
+with real touch events (CDP) and checks the page doesn't move. With reduced
 motion, `motion.spec.ts` checks that no looping animation runs. Only Play is in the initial
 bundle (72 KB gzip; `npm run size` enforces 200 KB in CI) and Play mounts its visuals a frame
 after the pedal paints. Lighthouse 12 (mobile, throttled, production build): Performance 96,

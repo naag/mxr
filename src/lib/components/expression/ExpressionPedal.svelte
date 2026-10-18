@@ -6,6 +6,7 @@
   import type { PedalStore } from '../../pedal/pedal.svelte'
   import { toeChanges, toeValue } from '../../pedal/presets'
   import { prefersReducedMotion } from 'svelte/motion'
+  import { noTouchScroll } from '../pedal/touch'
 
   /** Virtual expression pedal with a heel/toe editor and a morph view (reference §7). */
   let { pedal }: { pedal: PedalStore } = $props()
@@ -133,6 +134,7 @@
         onpointerup={() => (dragging = false)}
         onpointercancel={() => (dragging = false)}
         onkeydown={keyDown}
+        {@attach noTouchScroll}
       >
         <g aria-hidden="true">
           <rect x="14" y="84" width="92" height="14" rx="4" fill="#2a3038" />
