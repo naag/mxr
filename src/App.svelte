@@ -36,7 +36,7 @@
     {:else if route.name === 'presets'}
       <PresetsView />
     {:else if route.name === 'reference'}
-      <ReferenceView />
+      <ReferenceView term={route.term} />
     {:else}
       <PlayView />
     {/if}

@@ -44,7 +44,7 @@
         on
           ? 'border-[#2f7f86] bg-[rgba(67,198,207,0.12)] text-text'
           : 'border-[#232a33] text-muted',
-        inactive && !['input', 'mix', 'out'].includes(b) ? 'opacity-50' : '',
+        inactive && !['input', 'mix', 'out'].includes(b) ? 'border-dashed text-subtle' : '',
       ]}
       <li class="flex items-center gap-1.5">
         {#if tap}

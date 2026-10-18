@@ -57,5 +57,10 @@ now)`); parameters and their mappings in `params.ts`; factory presets in `preset
   (`links.ts`). Components draw live from the analysers via the shared `scheduler()` and fall
   back to the snapshot when the sound is off. A new parameter needs a `PARAM_LINKS` entry, and
   `computed.test.ts` checks that it visibly changes a linked visual.
+- Under the hood (`#/flow`) is data in `src/lib/flow/stages.ts`; `flowState()` decides which
+  steps and modulators are active.
+- Learn chapters are data in `src/lib/learn/chapters.ts` (one check per step) with copy in
+  `content/learn.ts`; keep their step lists the same length. Write `[[term]]` or
+  `[[term|words]]` in chapter copy to link a glossary entry (`content/glossary.ts`).
 - E2E audio checks use `window.__MXR_TEST__` (test builds only, see `src/lib/test-hooks.ts`):
   analyser levels per tap, telemetry, and deterministic offline renders.

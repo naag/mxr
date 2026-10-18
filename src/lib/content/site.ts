@@ -45,7 +45,7 @@ export const views: Record<
   reference: {
     kicker: 'Reference',
     title: 'Every control on the pedal',
-    lede: 'Main controls, the hidden VOICE and SHAPE layers, presets, jacks and a glossary.',
+    lede: 'Every control, including the hidden VOICE and SHAPE layers, and a glossary of synth words in plain language.',
     phase: 'Coming in Phase 7',
   },
 }

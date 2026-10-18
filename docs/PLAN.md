@@ -639,12 +639,23 @@ where the sound gets darker"; the hallway test with a real non-expert is still t
 clicking Oscillators, Filter, Amp or Out in the chain strip points the waveform at that tap.
 
 ### Phase 7: Learn mode
-- [ ] Chapter framework: goal checks, focused controls, dimming, progress (persisted),
+- [x] Chapter framework: goal checks, focused controls, dimming, progress (persisted),
   next/prev, deep links.
-- [ ] Chapters 0–13 from `learning-content.md`, plus the additive-synthesis demo and LFO widget.
-- [ ] Glossary with inline illustrations and cross-links.
-- [ ] Tests: E2E 10, a11y scans of every chapter.
+- [x] Chapters 0–13 from `learning-content.md`, plus the additive-synthesis demo and LFO widget.
+- [x] Glossary with inline illustrations and cross-links.
+- [x] Tests: E2E 10, a11y scans of every chapter.
 - **Done when:** content is reviewed for plain language (no unexplained jargon).
+
+Notes: chapters are data in `src/lib/learn/chapters.ts` (riff, setup, focused controls,
+visuals, one check per step); their words are in `content/learn.ts`. Checks run against the
+pedal state plus an observation of what the learner did since the chapter started
+(`learn/observe.ts`: shapes tried, footswitch taps, notes heard, each control's range), and
+`learn.test.ts` plays a solution through every chapter. Ticked steps stay ticked; finishing every
+step marks the chapter done in localStorage and unlocks Next (the chapter list always allows
+jumping). "Set up this chapter" loads the experiment's starting knobs into live mode and starts
+the riff. The glossary and a table of every control live in Reference; `[[term]]` in chapter
+copy links to `#/reference/<term>`. Chapter 13's "recreate the preset" challenge stays in
+Phase 10. The plain-language review of the copy by the owner is still to do.
 
 ### Phase 8: Presets gallery & expression
 - [ ] Preset recipe cards (key knobs tagged with chapters, era/instrument context).

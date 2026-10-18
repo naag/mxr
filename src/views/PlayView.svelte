@@ -1,12 +1,12 @@
 <script lang="ts">
   import ControlCaption from '../lib/components/pedal/ControlCaption.svelte'
+  import LayerKeys from '../lib/components/pedal/LayerKeys.svelte'
   import LayerToggle from '../lib/components/pedal/LayerToggle.svelte'
   import Pedal from '../lib/components/pedal/Pedal.svelte'
   import PresetBar from '../lib/components/pedal/PresetBar.svelte'
   import ShareButton from '../lib/components/pedal/ShareButton.svelte'
   import { views } from '../lib/content/site'
   import { vizCopy } from '../lib/content/viz'
-  import type { Button } from '../lib/pedal/machine'
   import { pedal, viz } from '../lib/state.svelte'
   import EnvelopeGraph from '../lib/viz/EnvelopeGraph.svelte'
   import LevelMeter from '../lib/viz/LevelMeter.svelte'
@@ -17,21 +17,6 @@
   import SignalChain from '../lib/viz/SignalChain.svelte'
   import Spectrum from '../lib/viz/Spectrum.svelte'
 
-  // Hold V or S on the keyboard to reach the VOICE or SHAPE layer.
-  const holdKeys: Record<string, Button> = { v: 'voice', s: 'shape' }
-  const typing = (t: EventTarget | null) =>
-    t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))
-
-  function keydown(e: KeyboardEvent) {
-    const button = holdKeys[e.key.toLowerCase()]
-    if (!button || e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return
-    pedal.down(button)
-  }
-  function keyup(e: KeyboardEvent) {
-    const button = holdKeys[e.key.toLowerCase()]
-    if (button) pedal.up(button)
-  }
-
   const highlight = $derived(knobsForViz(viz.hovered, pedal.layer))
   const detailOptions = [
     { value: 'simple', label: vizCopy.simple },
@@ -39,7 +24,7 @@
   ] as const
 </script>
 
-<svelte:window onkeydown={keydown} onkeyup={keyup} />
+<LayerKeys {pedal} />
 
 <div class="flex flex-wrap items-start gap-8">
   <div class="mx-auto flex w-full max-w-[440px] flex-col items-center gap-4">

@@ -9,6 +9,8 @@ describe('parseHash', () => {
     ['#/flow', { name: 'flow' }],
     ['#/presets/', { name: 'presets' }],
     ['#/reference', { name: 'reference' }],
+    ['#/reference/cutoff', { name: 'reference', term: 'cutoff' }],
+    ['#/reference/<b>', { name: 'reference' }],
     ['#/nope', { name: 'play' }],
     ['#/?p=1.1.0', { name: 'play' }],
     ['#/flow?x=1', { name: 'flow' }],
@@ -36,6 +38,7 @@ describe('hrefFor', () => {
       { name: 'learn', chapter: 7 },
       { name: 'presets' },
       { name: 'reference' },
+      { name: 'reference', term: 'low-pass' },
     ] as const) {
       expect(parseHash(hrefFor(route))).toEqual(route)
     }

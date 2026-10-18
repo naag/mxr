@@ -15,7 +15,7 @@
     >{flowCopy.jacks} · {r.label}</span
   >
   {#each [{ jack: flowCopy.outJack, text: r.out, used: true }, { jack: flowCopy.ctrJack, text: r.ctr, used: mode !== 'mono' }] as j (j.jack)}
-    <div class={['flex items-center gap-3 text-[13px]', j.used ? '' : 'opacity-55']}>
+    <div class="flex items-center gap-3 text-[13px]">
       <span
         class="w-12 rounded-md border border-[#2a313a] py-0.5 text-center font-mono text-xs text-[#c9d1d9]"
         >{j.jack}</span

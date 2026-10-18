@@ -35,6 +35,10 @@ export const VOICE_INTERVALS = [7, 12] as const
 /** ASSUMPTION: how long the pitch detector needs before a note sounds, per TRACKING mode. */
 export const TRACKING_DELAY_MS = [20, 12, 6] as const
 
+/** How far the LFO swings the cutoff, in octaves either way, for MOD and MOD BLEND. */
+export const lfoOctaves = (mod: number, modBlend: number) =>
+  modDepthRate(mod).depth * modBlend * 1.5
+
 /** Notes softer than this don't trigger the synth (ASSUMPTION on the exact curve). */
 export const gateThreshold = (gateSens: number) => 0.3 * (1 - gateSens)
 
@@ -211,7 +215,7 @@ export class PedalDSP {
     this.#glideMs = glideMs(v.glide)
     const mod = modDepthRate(v.mod)
     this.#lfo.rateHz = mod.rateHz
-    this.#lfoOct = mod.depth * v.modBlend * 1.5
+    this.#lfoOct = lfoOctaves(v.mod, v.modBlend)
     this.#chorusDepth = mod.depth * (1 - v.modBlend)
     this.#compAmount = v.comp
     this.#dryThru = stepIndex(PARAM.dryThru, v.dryThru) === 1
