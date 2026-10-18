@@ -36,3 +36,7 @@ Dark theme only, English only, no live audio input.
   Prettier.
 - Use theme tokens (`bg-surface`, `text-muted`, `stroke-stage-filter`) rather than raw hex.
 - Tick the matching checkbox in `docs/PLAN.md` §8 when a roadmap item is done.
+- Pedal geometry lives in `src/lib/pedal/layout.ts` (SVG units from the mockup); knob math
+  (angles, clock labels) in `src/lib/pedal/knob.ts`. Pedal controls are SVG elements with
+  ARIA roles (`slider`, `button`), so tests can find them by role and name.
+- Screenshot tests are tagged `@visual` and only run via `npm run test:visual`.

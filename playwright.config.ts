@@ -6,11 +6,16 @@ const chromiumLaunch = {
   args: ['--autoplay-policy=no-user-gesture-required'],
 }
 const ci = !!process.env.CI
+// Screenshot tests only run on request: baselines depend on the exact browser build
+// (see docs/PLAN.md §7.3), so `npm run test:visual` sets VISUAL=1.
+const visual = !!process.env.VISUAL
 
 export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
   forbidOnly: ci,
+  grep: visual ? /@visual/ : undefined,
+  grepInvert: visual ? undefined : /@visual/,
   retries: ci ? 1 : 0,
   reporter: ci ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
