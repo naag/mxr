@@ -518,14 +518,22 @@ the app deployable. Checkboxes track progress.
   from GitHub Actions.)
 
 ### Phase 1: The pedal (visual + interaction, no audio)
-- [ ] `Knob` (drag/wheel/keys, 300° sweep, clock formatting, ARIA), `PushButton`,
+- [x] `Knob` (drag/wheel/keys, 300° sweep, clock formatting, ARIA), `PushButton`,
   `Footswitch`, `Led` (on/off/soft-flash/hard-flash), `Jack`.
-- [ ] `Pedal` SVG: enclosure, texture, screen print, logo, layout per reference §2,
+- [x] `Pedal` SVG: enclosure, texture, screen print, logo, layout per reference §2,
   responsive scaling.
-- [ ] Hover/focus tooltips with the control-card one-liners.
-- [ ] Tests: component tests for Knob/Buttons, E2E scenarios 1–3, visual snapshots.
+- [x] Hover/focus tooltips with the control-card one-liners (`ControlCaption`; jacks use
+  SVG `<title>` tooltips).
+- [x] Tests: component tests for Knob/Buttons, E2E scenarios 1–3, visual snapshot test.
+- [ ] Visual baseline: generate `pedal.png` in the official Playwright Docker image for the
+  pinned version and compare it in CI. The test exists (`npm run test:visual`) but no
+  baseline is committed yet, because local browsers differ from CI's.
 - **Done when:** the pedal is visually close to the product photo (side-by-side review) and fully
   keyboard-operable.
+
+Phase 1 keeps a small `PedalState` class (`src/lib/pedal/pedal.svelte.ts`) for knob values,
+SHAPE, VOICE, bypass and a PRESETS counter. Phase 2 replaces it with `params.ts` and the
+state machine.
 
 ### Phase 2: Pedal brain (params, presets, state machine)
 - [ ] `params.ts` with all 6 × 3 parameters and mappings from reference §3–4.
