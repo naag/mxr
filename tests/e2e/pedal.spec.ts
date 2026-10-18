@@ -19,7 +19,7 @@ test('shows the pedal with all controls @smoke', async ({ page }) => {
   const pedal = page.getByRole('group', { name: 'MXR Bass Synth pedal' })
   await expect(pedal).toBeVisible()
   await expect(pedal.getByRole('slider')).toHaveCount(6)
-  for (const name of [/^Voice/, /^Shape/, /^Footswitch/, /^Presets/]) {
+  for (const name of [/^Voice:/, /^Shape:/, /^Footswitch/, /^Presets:/]) {
     await expect(pedal.getByRole('button', { name })).toBeVisible()
   }
 })
@@ -48,7 +48,7 @@ test('keyboard users can reach and turn every knob', async ({ page }) => {
   const mod = page.getByRole('slider', { name: 'Mod' })
   await mod.focus()
   await page.keyboard.press('End')
-  await expect(mod).toHaveAttribute('aria-valuetext', 'max')
+  await expect(mod).toHaveAttribute('aria-valuenow', '10')
   await expect(page.getByTestId('control-caption')).toContainText('MOD')
 })
 
@@ -63,12 +63,12 @@ test('the caption explains the control in focus', async ({ page }) => {
 })
 
 test('SHAPE, VOICE and the footswitch respond to taps', async ({ page }) => {
-  const shape = page.getByRole('button', { name: /^Shape/ })
+  const shape = page.getByRole('button', { name: /^Shape:/ })
   await expect(shape).toHaveAccessibleName('Shape: sawtooth')
   await shape.click()
   await expect(shape).toHaveAccessibleName('Shape: square')
 
-  const voice = page.getByRole('button', { name: /^Voice/ })
+  const voice = page.getByRole('button', { name: /^Voice:/ })
   await voice.click()
   await expect(voice).toHaveAttribute('aria-pressed', 'true')
 

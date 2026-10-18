@@ -40,3 +40,7 @@ Dark theme only, English only, no live audio input.
   (angles, clock labels) in `src/lib/pedal/knob.ts`. Pedal controls are SVG elements with
   ARIA roles (`slider`, `button`), so tests can find them by role and name.
 - Screenshot tests are tagged `@visual` and only run via `npm run test:visual`.
+- Pedal behavior lives in the pure reducer `src/lib/pedal/machine.ts` (`reduce(state, event,
+now)`); parameters and their mappings in `params.ts`; factory presets in `presets.ts`. The
+  Svelte store `pedal.svelte.ts` only wraps them. Change behavior in the machine and test it
+  there first.

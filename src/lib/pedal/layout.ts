@@ -39,13 +39,3 @@ export const JACKS = {
   ctr: { side: 'left', y: 1066 },
   in: { side: 'right', y: 597 },
 } as const
-
-/** Knob values for live mode at startup (the mockup's live patch). */
-export const DEFAULT_KNOBS: Record<KnobId, number> = {
-  mix: 0.7,
-  cutoff: 0.4,
-  envelope: 0.3,
-  sub: 0.4,
-  resonance: 0.5,
-  mod: 0.2,
-}

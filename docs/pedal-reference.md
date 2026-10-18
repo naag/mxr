@@ -153,6 +153,20 @@ calibration (PLAN Phase 4b):
 
 (Values are clock positions; "off" = fully CCW.)
 
+### Hold times and timeouts used by the simulator
+
+The manual gives the 2 s (copy/save) and 5 s (reset) holds. The rest are **ASSUMPTIONS**,
+kept in `TIMING` in `src/lib/pedal/machine.ts`:
+
+| Rule | Value |
+|---|---|
+| VOICE / SHAPE tap (no knob turned) | shorter than 500 ms |
+| Footswitch hold (preset scroll or freeze) | 600 ms |
+| Preset scroll ends after no taps for | 5 s |
+| Copy/save menu ends after | 15 s |
+| PRESETS cycle includes live mode | live → G1 … G4 → R1 … R4 → live |
+| Double-click a knob | back to the preset's saved value (live mode: the starting value) |
+
 ## 6. Footswitch freeze mode
 
 Hold the footswitch and turn RESONANCE to max: holding the footswitch now **freezes
