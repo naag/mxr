@@ -12,6 +12,7 @@
     SHAPE_LEDS,
     VIEWBOX,
     VOICE_BUTTON,
+    type KnobId,
   } from '../../pedal/layout'
   import { describe, stepIndex } from '../../pedal/params'
   import type { ControlId, PedalStore } from '../../pedal/pedal.svelte'
@@ -23,7 +24,14 @@
   import PedalDefs from './PedalDefs.svelte'
   import PushButton from './PushButton.svelte'
 
-  let { pedal }: { pedal: PedalStore } = $props()
+  let {
+    pedal,
+    highlight = [],
+  }: {
+    pedal: PedalStore
+    /** Knobs to light up (linked highlighting from the visuals). */
+    highlight?: readonly KnobId[]
+  } = $props()
 
   const uid = $props.id()
   const ids = makeDefIds(uid)
@@ -282,6 +290,7 @@
       valueText={describe(k.p.id, k.value)}
       steps={k.p.steps?.length}
       ringColor={stageColors[k.p.stage]}
+      highlighted={highlight.includes(k.id)}
       {ids}
       onchange={(v) => pedal.turn(k.id, v)}
       onreset={() => pedal.resetKnob(k.id)}

@@ -17,6 +17,12 @@
   --color-muted: #a3adb7;
   --color-subtle: #8f99a3;
 
+  /* Visuals: grids, axes and markers on the scope, spectrum and graphs. */
+  --color-grid: #1b222a;
+  --color-axis: #2a323c;
+  --color-marker: #3a4450;
+  --color-faint: #7d8893;
+
   --color-pedal-body: #3c3f44;
   --color-knob-orange: #f26a10;
   --color-knob-teal: #5bb5be;

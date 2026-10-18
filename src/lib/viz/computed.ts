@@ -95,10 +95,18 @@ export function envelopeSeconds(settings: PedalSettings): number {
   return steps.find((s) => s >= need * 1.4) ?? steps[steps.length - 1]
 }
 
-function decimate(x: Float32Array, factor: number, mode: 'mean' | 'peak' = 'mean'): Float32Array {
+function decimate(
+  x: Float32Array,
+  factor: number,
+  mode: 'mean' | 'peak' | 'pick' = 'mean',
+): Float32Array {
   const n = Math.floor(x.length / factor)
   const out = new Float32Array(n)
   for (let i = 0; i < n; i++) {
+    if (mode === 'pick') {
+      out[i] = x[i * factor]
+      continue
+    }
     let acc = 0
     for (let j = 0; j < factor; j++) {
       const v = x[i * factor + j]
@@ -134,10 +142,9 @@ export function pitchCurve(settings: PedalSettings, riff: Riff, bpm: number): Pi
   const { notes, seconds, beat } = riffEvents(riff, bpm)
   const r = renderOffline(settings, notes, seconds, PITCH_RATE)
   const threshold = gateThreshold(settings.globals.gateSens)
-  // Before the first note the DSP reports its idle pitch; show nothing there.
-  const pitch = decimate(r.pitch, PITCH_RATE / CONTROL_RATE)
-  const first = Math.ceil((notes[0]?.at ?? 0) * CONTROL_RATE)
-  for (let i = 0; i < Math.min(first, pitch.length); i++) pitch[i] = NaN
+  // Until the synth starts its first note the DSP reports pitch 0; show nothing there.
+  const pitch = decimate(r.pitch, PITCH_RATE / CONTROL_RATE, 'pick')
+  for (let i = 0; i < pitch.length && pitch[i] < 1; i++) pitch[i] = NaN
   return {
     dt: 1 / CONTROL_RATE,
     seconds,

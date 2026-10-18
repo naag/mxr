@@ -29,6 +29,8 @@
     onchange: (value: number) => void
     onreset: () => void
     onactive?: (active: boolean) => void
+    /** Lit by linked highlighting (pointing at a visual this knob changes). */
+    highlighted?: boolean
   }
 
   let {
@@ -44,6 +46,7 @@
     onchange,
     onreset,
     onactive,
+    highlighted = false,
   }: Props = $props()
 
   let dragging = $state(false)
@@ -123,6 +126,7 @@
   aria-valuenow={toDial(value)}
   aria-valuetext={valueText}
   data-dragging={dragging || undefined}
+  data-highlighted={highlighted}
   onpointerdown={pointerDown}
   onpointermove={pointerMove}
   onpointerup={pointerUp}
@@ -136,7 +140,7 @@
   {@attach wheel}
 >
   <circle r="104" fill="transparent" />
-  <g class="ring" opacity={showRing ? 1 : 0} aria-hidden="true">
+  <g class="ring" opacity={showRing ? 1 : highlighted ? 0.7 : 0} aria-hidden="true">
     <path
       d={arcPath(101, -150, 150)}
       fill="none"

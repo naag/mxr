@@ -73,7 +73,8 @@ export class AudioEngine {
     node.connect(tapSplit, 1)
     const analyser = () => {
       const a = ctx.createAnalyser()
-      a.fftSize = 4096
+      // Room for three cycles of a low E with the sub on (about 20 Hz), for the scope.
+      a.fftSize = 8192
       a.smoothingTimeConstant = 0
       return a
     }
@@ -134,6 +135,14 @@ export class AudioEngine {
 
   stop() {
     this.#post({ type: 'stop' })
+  }
+
+  /** Copies the newest samples of an analyser into `buf`. False before the engine runs. */
+  readTap(name: AnalyserName, buf: Float32Array<ArrayBuffer>): boolean {
+    const a = this.analysers[name]
+    if (!a) return false
+    a.getFloatTimeDomainData(buf)
+    return true
   }
 
   /** RMS of every analyser's latest window, for meters and tests. */

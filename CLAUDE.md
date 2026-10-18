@@ -52,5 +52,10 @@ now)`); parameters and their mappings in `params.ts`; factory presets in `preset
 - The `pedal` and `audio` stores are app-wide singletons in `src/lib/state.svelte.ts`;
   `App.svelte` syncs pedal settings into the audio engine. The AudioWorklet only talks to the
   main thread through the messages in `src/lib/audio/protocol.ts`.
+- Visuals live in `src/lib/viz/`: pure analysis and drawing (`analysis.ts`, `draw/*.ts`), the
+  offline "computed" snapshot (`computed.ts`, rendered in a worker), and control ↔ visual links
+  (`links.ts`). Components draw live from the analysers via the shared `scheduler()` and fall
+  back to the snapshot when the sound is off. A new parameter needs a `PARAM_LINKS` entry, and
+  `computed.test.ts` checks that it visibly changes a linked visual.
 - E2E audio checks use `window.__MXR_TEST__` (test builds only, see `src/lib/test-hooks.ts`):
   analyser levels per tap, telemetry, and deterministic offline renders.

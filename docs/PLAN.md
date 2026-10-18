@@ -604,13 +604,24 @@ against it instead of guessed from demo videos.
   session finds each preset recognizably close.
 
 ### Phase 5: Core visualizations
-- [ ] rAF scheduler, analysis helpers, offline-render worker.
-- [ ] Oscilloscope (triggered, tap selector, layers mode), spectrum + analytic filter
+- [x] rAF scheduler, analysis helpers, offline-render worker.
+- [x] Oscilloscope (triggered, tap selector, layers mode), spectrum + analytic filter
   curve, envelope graph, pitch graph, level/GR meter.
-- [ ] Simple ⇄ Detailed toggle, live text readouts.
-- [ ] Linked highlighting between pedal ↔ visuals.
-- [ ] Tests: viz unit tests, visual snapshots from offline renders, E2E 9.
+- [x] Simple ⇄ Detailed toggle, live text readouts.
+- [x] Linked highlighting between pedal ↔ visuals.
+- [x] Tests: viz unit tests, visual snapshots from offline renders, E2E 9.
 - **Done when:** every primary and secondary parameter has a visible effect in at least one visual.
+
+Notes: code is in `src/lib/viz/`. `computed.ts` renders a held A1 and one loop of the selected
+riff (in `offline.worker.ts`, debounced 30 ms) and drives every visual while the sound is off;
+while a riff or note plays the scope and spectrum read the analysers and the envelope and pitch
+graphs follow telemetry (note age, cutoff, pitch, amp level). `links.ts` maps each control to its
+visuals and signal-chain blocks; `computed.test.ts` checks the "done when" rule by turning every
+parameter and measuring a change in a linked visual's data. Scope and spectrum are Canvas 2D
+(pure `draw/*.ts` functions, tested with a recording context); envelope and pitch are SVG drawn
+1:1 in CSS pixels. Readouts are `aria-live` and update at most once per second. The `@visual`
+snapshot (`visuals.png`) has no committed baseline yet, same as Phase 1. The play-view
+signal-chain strip is a preview of Phase 6's diagram.
 
 ### Phase 6: Under the hood (signal flow)
 - [ ] Signal-flow diagram (reference §9) with stage colors, active/inactive states,

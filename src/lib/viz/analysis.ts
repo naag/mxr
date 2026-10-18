@@ -53,6 +53,8 @@ export function resample(
 
 export interface ScopeWindow {
   samples: Float32Array
+  /** Trigger index the window starts at. */
+  start: number
   /** Length of the shown window in samples. */
   length: number
   /** Cycles of the full waveform (sub-aware) shown. */
@@ -76,7 +78,7 @@ export function scopeWindow(
   const length = n * p
   const from = Math.max(0, x.length - length - p - 2)
   const trigger = findTrigger(x, p, from)
-  return { samples: resample(x, trigger, length, points), length, cycles: n }
+  return { samples: resample(x, trigger, length, points), start: trigger, length, cycles: n }
 }
 
 /** Largest power of two that fits in `n`, capped at `max`. */
