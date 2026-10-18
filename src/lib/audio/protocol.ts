@@ -17,6 +17,10 @@ export interface Telemetry {
   cutoffHz: number
   pitch: number
   gainReductionDb: number
+  /** Seconds since the synth started the current note, or null before the first. */
+  noteAge: number | null
+  /** Amp-stage gain (string level × AMP ENV), 0–1.5. */
+  level: number
   /** Peak output level since the last message, 0–1+. */
   peakLeft: number
   peakRight: number
