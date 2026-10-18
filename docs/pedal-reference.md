@@ -112,8 +112,8 @@ Simulator mappings for secondary values:
 | MOD BLEND | 0 = chorus only, 1 = filter LFO only (**ASSUMPTION** on direction) |
 | COMP | ratio 1:1 → ∞:1 (limit), threshold falls with `k`, auto make-up |
 | OUTPUT GAIN | `(k − 0.5) · 36` dB |
-| GATE SENS | threshold relative to running average level; only affects *live input* mode, simulated as "soft notes may drop out" for the virtual bass |
-| TRACKING | 3-way stepped; affects detector range and latency in *live input* mode |
+| GATE SENS | the app has no live input, so this is simulated: soft (ghost) notes from the built-in riffs below the threshold don't trigger the synth |
+| TRACKING | 3-way stepped; simulated as the tracking delay before a low note sounds (longest in 5S, shortest in 4S) |
 | DRY THRU FX | 2-way stepped (`k < 0.5` off) |
 | OUTPUT MODE | 3-way stepped |
 
@@ -137,13 +137,14 @@ In the UI, 3-position "knobs" snap to three detents and show their legend
 
 Factory presets (descriptions from the manual). The **knob values are our own
 first-draft approximations** made from those descriptions. The manual doesn't
-publish them, so tune them by ear:
+publish them, so they get replaced with values measured on the real pedal during
+calibration (PLAN Phase 4b):
 
 | Bank | Name | Inspiration (per manual) | Draft recipe |
 |---|---|---|---|
 | G1 | **THRILLENGANES** | Greg Phillinganes' ARP 2600 work on "Thriller". Octave-down, '80s. | ◿ saw, SUB MIX 1, CUTOFF 11, RES 10, ENVELOPE 9 (short), ENV AMT 2, MIX 3 |
 | G2 | **WONDERFUL** | Stevie Wonder's left hand on the TONTO synth. Short, funky resonant drop. | ⊓ square, CUTOFF 9, RES 2, ENVELOPE 9, ENV AMT 3, GLIDE 9, MIX 2 |
-| G3 | **LIZARD SYNTH** | Herbie Hancock's ARP Odyssey on "Chameleon". High resonance, '70s funk. | ◿ saw, CUTOFF 9, RES 3, ENVELOPE 11, ENV AMT 2, MIX 4 |
+| G3 | **LIZARD SYNTH** | Herbie Hancock's ARP Odyssey on "Chameleon". High resonance, '70s funk. | ◿ saw, CUTOFF 10, RES 3, ENVELOPE 11, ENV AMT 2, MIX 4 |
 | G4 | **SYNTHADELIC** | Bernie Worrell's Minimoog on "Flashlight". Octave-down, wide open. | ⊓ square, SUB MIX 2, CUTOFF 3, RES 10, ENVELOPE off, GLIDE 10, MIX 4 |
 | R1 | **SLEDGE** | Tony Levin on "Sledgehammer". Analog octave + compression + chorus. | △ triangle, SUB MIX 2, CUTOFF 1, COMP 3, MOD 12, MOD BLEND 8 (chorus), MIX 1 |
 | R2 | **ARMY OF SYNTH** | Synth bass on Björk's "Army of Me". Use expression for intensity. | ◿ saw + VOICE, CUTOFF 10, RES 12, ENVELOPE 10, COMP 2; toe: CUTOFF 3, RES 2 |

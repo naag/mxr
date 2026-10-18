@@ -1,0 +1,40 @@
+export type RouteName = 'play' | 'flow' | 'learn' | 'presets' | 'reference'
+
+export interface Route {
+  name: RouteName
+  /** Learn chapter, 0–13. Only set for the `learn` route. */
+  chapter?: number
+}
+
+export const LAST_CHAPTER = 13
+
+const simple: Record<string, RouteName> = {
+  '': 'play',
+  flow: 'flow',
+  presets: 'presets',
+  reference: 'reference',
+}
+
+/** Parses `location.hash` (e.g. `#/learn/5`) into a route. Unknown paths fall back to Play. */
+export function parseHash(hash: string): Route {
+  const path = hash.replace(/^#\/?/, '').replace(/\/+$/, '')
+  const [head = '', arg] = path.split('/')
+
+  if (head === 'learn') {
+    const n = Number(arg)
+    const chapter = Number.isInteger(n) && n >= 0 && n <= LAST_CHAPTER ? n : 0
+    return { name: 'learn', chapter }
+  }
+  return { name: simple[head] ?? 'play' }
+}
+
+export function hrefFor(route: Route): string {
+  switch (route.name) {
+    case 'play':
+      return '#/'
+    case 'learn':
+      return `#/learn/${route.chapter ?? 0}`
+    default:
+      return `#/${route.name}`
+  }
+}

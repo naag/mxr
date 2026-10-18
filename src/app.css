@@ -1,0 +1,59 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/instrument-sans/wdth.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+@import '@fontsource-variable/comfortaa/wght.css';
+
+/* Design tokens. Values match the mockup's "Design language" board (docs/PLAN.md §4.2). */
+@theme {
+  --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --font-wordmark: 'Comfortaa Variable', sans-serif;
+
+  --color-bg: #0d1014;
+  --color-surface: #11161c;
+  --color-raised: #151a20;
+  --color-line: #1e252d;
+  --color-text: #e8eaed;
+  --color-muted: #a3adb7;
+  --color-subtle: #8f99a3;
+
+  --color-pedal-body: #3c3f44;
+  --color-knob-orange: #f26a10;
+  --color-knob-teal: #5bb5be;
+  --color-silk: #e6e4df;
+
+  --color-stage-osc: #f2a93b;
+  --color-stage-filter: #43c6cf;
+  --color-stage-env: #a68bf5;
+  --color-stage-mod: #ee7bb8;
+  --color-stage-dyn: #a6d96a;
+  --color-stage-input: #8c99a8;
+
+  --color-layer-voice: #8fd3ff;
+  --color-layer-shape: #8be59a;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-bg font-sans text-text antialiased;
+    margin: 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-stage-filter);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
