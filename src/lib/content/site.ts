@@ -49,6 +49,11 @@ export const views: Record<RouteName, { kicker: string; title: string; lede: str
 
 export const aboutLink = 'About & disclaimer'
 
+export const siteCopy = {
+  skip: 'Skip to content',
+  shortcuts: 'Keyboard shortcuts (?)',
+}
+
 /** The About page (PLAN Phase 9): purpose, honesty notes, disclaimer and credits. */
 export const about = {
   sections: [

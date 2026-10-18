@@ -96,7 +96,7 @@ test('Detailed mode adds a spectrogram that follows the cutoff', async ({ page }
   await cutoff.focus()
   await page.keyboard.press('Home')
   await expect.poll(top).toBeLessThan(before)
-  await cutoff.hover()
+  // The focused CUTOFF knob lights up its linked visuals, the spectrogram included.
   await expect(spec).toHaveAttribute('data-highlighted', 'true')
 })
 

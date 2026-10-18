@@ -48,7 +48,8 @@
   aria-pressed={pressed}
   {@attach pressable(() => ({ ondown, onup, onactive, onpressed: (p) => (down = p) }))}
 >
-  <circle r={r + 14} fill="transparent" />
+  <!-- Touch target: at least 100 units across (≈ 44 px on a phone-width pedal). -->
+  <circle r={Math.max(r + 14, 50)} fill="transparent" />
   {#if look === 'grey'}
     <circle r={r + 16} fill={ringColor} opacity={pressed ? 0.45 : 0} filter={url(ids.glow)} />
     <circle cx="4" cy="10" r={r + 4} fill="#000" opacity="0.5" filter={url(ids.blur6)} />

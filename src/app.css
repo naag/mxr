@@ -45,6 +45,14 @@
 @layer base {
   html {
     color-scheme: dark;
+    /* Keep focused and scrolled-to controls clear of the sticky source bar. */
+    scroll-padding-bottom: 96px;
+  }
+
+  @media (max-width: 639px) {
+    html {
+      scroll-padding-bottom: 136px;
+    }
   }
 
   body {

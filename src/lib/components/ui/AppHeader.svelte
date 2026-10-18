@@ -17,13 +17,16 @@
       <span class="text-xs text-subtle">{appTagline}</span>
     </span>
   </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-1">
+  <nav
+    aria-label="Main"
+    class="flex flex-wrap gap-1 max-sm:order-last max-sm:-mx-4 max-sm:w-[calc(100%+2rem)] max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-3"
+  >
     {#each navItems as item (item.name)}
       <a
         href={item.href}
         aria-current={item.name === current ? 'page' : undefined}
         class={[
-          'rounded-lg px-3 py-2 text-sm no-underline transition-colors',
+          'shrink-0 rounded-lg px-3 py-2 text-sm whitespace-nowrap no-underline transition-colors',
           item.name === current
             ? 'bg-[#1a2129] font-semibold text-text'
             : 'font-medium text-muted hover:text-text',

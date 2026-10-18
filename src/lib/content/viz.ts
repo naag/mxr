@@ -1,7 +1,7 @@
 /** Copy for the visuals: titles, legends and the live text readouts (PLAN §3). */
 import { noteName } from '../audio/notes'
 import type { ScopeTap } from '../viz/computed'
-import type { BlockId } from '../viz/links'
+import type { BlockId, VizId } from '../viz/links'
 
 const hz = (f: number) =>
   f >= 1000 ? `${(f / 1000).toFixed(f >= 10000 ? 0 : 1)} kHz` : `${Math.round(f)} Hz`
@@ -9,6 +9,15 @@ const ms = (t: number) => (t >= 1 ? `${t.toFixed(2)} s` : `${Math.round(t * 1000
 const db = (v: number) => `${v < 0 ? '−' : v > 0 ? '+' : ''}${Math.abs(v).toFixed(0)} dB`
 
 export const vizCopy = {
+  tabsLabel: 'Visuals',
+  tabs: {
+    scope: 'Wave',
+    meter: 'Levels',
+    spectrum: 'Spectrum',
+    spectrogram: 'Spectrogram',
+    envelope: 'Envelope',
+    pitch: 'Pitch',
+  } satisfies Record<VizId, string>,
   live: 'Live',
   computed: 'Computed',
   computedHint: 'Sound is off: these show a computed A1 note and one loop of the riff.',

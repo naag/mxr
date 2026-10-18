@@ -11,7 +11,8 @@
   import { pedal, viz } from '../lib/state.svelte'
   import EnvelopeGraph from '../lib/viz/EnvelopeGraph.svelte'
   import LevelMeter from '../lib/viz/LevelMeter.svelte'
-  import { knobsForViz } from '../lib/viz/links'
+  import { knobsForViz, type VizId } from '../lib/viz/links'
+  import { MediaQuery } from 'svelte/reactivity'
   import PitchGraph from '../lib/viz/PitchGraph.svelte'
   import Scope from '../lib/viz/Scope.svelte'
   import Segmented from '../lib/viz/Segmented.svelte'
@@ -20,6 +21,30 @@
   import Spectrum from '../lib/viz/Spectrum.svelte'
 
   const keys = holdKeyHandlers(pedal)
+
+  // Phones (PLAN §2.4): the visuals become a swipeable strip with tabs.
+  const phone = new MediaQuery('max-width: 767px')
+  const slide = 'max-md:w-full max-md:flex-none max-md:snap-start'
+  const tabs = $derived<VizId[]>(
+    viz.detailed
+      ? ['scope', 'meter', 'spectrum', 'spectrogram', 'envelope', 'pitch']
+      : ['scope', 'meter', 'spectrum', 'envelope', 'pitch'],
+  )
+  let strip: HTMLDivElement | undefined = $state()
+  let shown = $state<VizId>('scope')
+
+  function show(id: VizId) {
+    const panel = strip?.querySelector<HTMLElement>(`[data-viz="${id}"]`)
+    if (!strip || !panel) return
+    strip.scrollTo({ left: panel.offsetLeft - strip.offsetLeft, behavior: 'smooth' })
+    shown = id
+  }
+
+  function onscroll() {
+    if (!strip || !phone.current) return
+    const i = Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth))
+    shown = tabs[Math.min(tabs.length - 1, Math.max(0, i))]
+  }
 
   const highlight = $derived(knobsForViz(viz.hovered, pedal.layer))
   const detailOptions = [
@@ -59,15 +84,44 @@
       </div>
     </div>
     <SignalChain />
-    <div class="flex flex-wrap gap-4">
-      <Scope class="flex-[3_1_460px]" />
-      <LevelMeter class="flex-[2_1_260px]" />
-    </div>
-    <Spectrum />
-    {#if viz.detailed}<Spectrogram />{/if}
-    <div class="flex flex-wrap gap-4">
-      <EnvelopeGraph class="flex-[1_1_360px]" />
-      <PitchGraph class="flex-[1_1_360px]" />
+    {#if phone.current}
+      <div
+        role="group"
+        aria-label={vizCopy.tabsLabel}
+        class="-mx-4 flex gap-1 overflow-x-auto border-b border-line px-4"
+        data-testid="viz-tabs"
+      >
+        {#each tabs as id (id)}
+          <button
+            type="button"
+            aria-pressed={shown === id}
+            onclick={() => show(id)}
+            class={[
+              'min-h-11 shrink-0 cursor-pointer border-b-2 px-3 text-[13.5px]',
+              shown === id
+                ? 'border-stage-filter font-semibold text-text'
+                : 'border-transparent text-subtle',
+            ]}>{vizCopy.tabs[id]}</button
+          >
+        {/each}
+      </div>
+    {/if}
+    <div
+      bind:this={strip}
+      {onscroll}
+      class="relative flex flex-col gap-4 max-md:-mx-4 max-md:snap-x max-md:snap-mandatory max-md:[scroll-padding-inline:16px] max-md:flex-row max-md:overflow-x-auto max-md:px-4"
+      data-testid="viz-strip"
+    >
+      <div class="flex flex-wrap gap-4 max-md:contents">
+        <Scope class="flex-[3_1_460px] {slide}" />
+        <LevelMeter class="flex-[2_1_260px] {slide}" />
+      </div>
+      <Spectrum class={slide} />
+      {#if viz.detailed}<Spectrogram class={slide} />{/if}
+      <div class="flex flex-wrap gap-4 max-md:contents">
+        <EnvelopeGraph class="flex-[1_1_360px] {slide}" />
+        <PitchGraph class="flex-[1_1_360px] {slide}" />
+      </div>
     </div>
   </div>
 </div>
