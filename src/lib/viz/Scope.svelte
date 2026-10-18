@@ -13,7 +13,20 @@
   import Segmented from './Segmented.svelte'
   import VizPanel from './VizPanel.svelte'
 
-  let { class: cls = '' }: { class?: string } = $props()
+  let {
+    class: cls = '',
+    fixedTap,
+    fixedLayers,
+  }: {
+    class?: string
+    /** Learn chapters pin the tap point (and layers mode) instead of using the shared choice. */
+    fixedTap?: ScopeTap
+    fixedLayers?: boolean
+  } = $props()
+
+  const pinned = $derived(fixedTap !== undefined)
+  const tapNow = $derived(fixedTap ?? viz.tap)
+  const layersNow = $derived(fixedLayers ?? viz.layers)
 
   const view = new CanvasView()
   const live = $derived(isLive())
@@ -58,7 +71,7 @@
     const ctx = view.context()
     const snap = computed.snapshot
     if (!ctx) return
-    const tap = viz.tap
+    const tap = tapNow
     const settings = pedalSettings()
     const isLiveNow = live && audio.engine.ctx !== null
     let main: Float32Array
@@ -87,7 +100,7 @@
     let cycles: number
     let silent: boolean
 
-    if (viz.layers && tap === 'osc') {
+    if (layersNow && tap === 'osc') {
       cycles = 2
       const { layers, sum } = oscLayers(settings, midi ?? 33, cycles * period, sr)
       const peak = peakOf(sum)
@@ -168,25 +181,27 @@
   class={cls}
 >
   {#snippet actions()}
-    <Segmented
-      label={vizCopy.scope.tapLabel}
-      options={tapOptions}
-      value={viz.tap}
-      onchange={(t) => viz.setTap(t)}
-    />
-    {#if viz.tap === 'osc'}
-      <button
-        type="button"
-        aria-pressed={viz.layers}
-        title={vizCopy.scope.layersHint}
-        onclick={() => viz.setLayers(!viz.layers)}
-        class={[
-          'min-h-[36px] cursor-pointer rounded-[10px] border px-3 text-[12.5px]',
-          viz.layers
-            ? 'border-[#5c4a26] bg-[rgba(242,169,59,0.14)] font-semibold text-[#f7c77a]'
-            : 'border-line text-muted hover:text-text',
-        ]}>{vizCopy.scope.layers}</button
-      >
+    {#if !pinned}
+      <Segmented
+        label={vizCopy.scope.tapLabel}
+        options={tapOptions}
+        value={viz.tap}
+        onchange={(t) => viz.setTap(t)}
+      />
+      {#if viz.tap === 'osc'}
+        <button
+          type="button"
+          aria-pressed={viz.layers}
+          title={vizCopy.scope.layersHint}
+          onclick={() => viz.setLayers(!viz.layers)}
+          class={[
+            'min-h-[36px] cursor-pointer rounded-[10px] border px-3 text-[12.5px]',
+            viz.layers
+              ? 'border-[#5c4a26] bg-[rgba(242,169,59,0.14)] font-semibold text-[#f7c77a]'
+              : 'border-line text-muted hover:text-text',
+          ]}>{vizCopy.scope.layers}</button
+        >
+      {/if}
     {/if}
   {/snippet}
   <div role="img" aria-label="{vizCopy.scope.canvas}: {readout}">
@@ -198,7 +213,7 @@
     ></canvas>
   </div>
   {#snippet legend()}
-    {#if viz.layers && viz.tap === 'osc'}
+    {#if layersNow && tapNow === 'osc'}
       <span class="inline-flex items-center gap-2"
         ><svg width="22" height="8" aria-hidden="true"
           ><path d="M1 4 H21" stroke="var(--color-text)" stroke-width="2.4" /></svg
@@ -217,7 +232,7 @@
         >
       {/each}
     {:else}
-      {#if viz.tap === 'filter'}
+      {#if tapNow === 'filter'}
         <span class="inline-flex items-center gap-2"
           ><svg width="22" height="8" aria-hidden="true"
             ><path
@@ -231,8 +246,8 @@
       {/if}
       <span class="inline-flex items-center gap-2"
         ><svg width="22" height="8" aria-hidden="true"
-          ><path d="M1 4 H21" stroke="var(--color-{tapColor[viz.tap]})" stroke-width="3" /></svg
-        >{vizCopy.tapLegend[viz.tap]}</span
+          ><path d="M1 4 H21" stroke="var(--color-{tapColor[tapNow]})" stroke-width="3" /></svg
+        >{vizCopy.tapLegend[tapNow]}</span
       >
     {/if}
   {/snippet}

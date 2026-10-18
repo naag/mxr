@@ -59,3 +59,8 @@ now)`); parameters and their mappings in `params.ts`; factory presets in `preset
   `computed.test.ts` checks that it visibly changes a linked visual.
 - E2E audio checks use `window.__MXR_TEST__` (test builds only, see `src/lib/test-hooks.ts`):
   analyser levels per tap, telemetry, and deterministic offline renders.
+- Learn chapters are data in `src/lib/learn/chapters.ts` (one goal check per step) with their
+  copy in `src/lib/content/learn.ts` (one step text per check); `learn.test.ts` has a walkthrough
+  per chapter that must stay finishable. Copy links the glossary with `[[term|words]]`.
+- The signal-flow model is `src/lib/viz/flow.ts`; the Under-the-hood view and Learn chapter 12
+  share it.

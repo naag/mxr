@@ -32,5 +32,5 @@ export type FromWorklet = Telemetry
 export const PROCESSOR_NAME = 'mxr-pedal'
 
 /** Channels of the second output, in order. */
-export const TAP_CHANNELS = ['dry', 'osc', 'filter', 'amp', 'fx'] as const
+export const TAP_CHANNELS = ['dry', 'osc', 'filter', 'amp', 'chorus', 'fx'] as const
 export type TapName = (typeof TAP_CHANNELS)[number]

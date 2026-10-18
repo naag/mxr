@@ -11,8 +11,8 @@ import {
   type MachineEvent,
   type MachineState,
 } from './machine'
-import { paramAt, type Layer, type ParamDef } from './params'
-import { bankOf, presetInfo, type Patch } from './presets'
+import { PARAM, paramAt, type Layer, type ParamDef, type ParamId } from './params'
+import { bankOf, presetInfo, type Patch, type Shape } from './presets'
 import { browserStorage, loadPedal, savePedal } from './storage'
 
 export type ControlId = KnobId | 'voice' | 'shape' | 'footswitch' | 'presets'
@@ -104,4 +104,18 @@ export class PedalStore {
   up = (button: Button) => this.dispatch({ type: 'up', button })
   setLayer = (layer: Layer) => this.dispatch({ type: 'setLayer', layer })
   select = (preset: number) => this.dispatch({ type: 'select', preset })
+  set = (param: ParamId, value: number) => this.dispatch({ type: 'set', param, value })
+  setShape = (shape: Shape) => this.dispatch({ type: 'setShape', shape })
+  setVoice = (on: boolean) => this.dispatch({ type: 'setVoice', on })
+  load = (patch: Patch) => this.dispatch({ type: 'load', patch })
+  /** A quick footswitch tap: synth on or off (outside preset scroll). */
+  toggleBypass = () => {
+    this.down('foot')
+    this.up('foot')
+  }
+
+  /** Current value of any parameter, whatever layer the knobs are in. */
+  valueOf(param: ParamId): number {
+    return valueOf(this.state, PARAM[param])
+  }
 }

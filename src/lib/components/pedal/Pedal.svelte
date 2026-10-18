@@ -27,16 +27,21 @@
   let {
     pedal,
     highlight = [],
+    focus = [],
   }: {
     pedal: PedalStore
     /** Knobs to light up (linked highlighting from the visuals). */
     highlight?: readonly KnobId[]
+    /** Learn mode: these controls are in focus; the rest dim but stay usable. */
+    focus?: readonly ControlId[]
   } = $props()
 
   const uid = $props.id()
   const ids = makeDefIds(uid)
   const vb = `${VIEWBOX.x} ${VIEWBOX.y} ${VIEWBOX.width} ${VIEWBOX.height}`
   const E = ENCLOSURE
+
+  const dim = (id: ControlId) => (focus.length > 0 && !focus.includes(id) ? 0.35 : 1)
 
   function active(id: ControlId) {
     return (on: boolean) => {
@@ -236,25 +241,29 @@
   </g>
 
   <!-- Buttons and LEDs -->
-  <PushButton
-    {...VOICE_BUTTON}
-    name="Voice: harmony voices {s.current.voiceOn ? 'on' : 'off'}"
-    pressed={s.current.voiceOn}
-    tint={layer === 'voice' ? 'var(--color-layer-voice)' : null}
-    {ids}
-    ondown={() => pedal.down('voice')}
-    onup={() => pedal.up('voice')}
-    onactive={active('voice')}
-  />
-  <PushButton
-    {...SHAPE_BUTTON}
-    name="Shape: {shapeNames[s.current.shape].toLowerCase()}"
-    tint={layer === 'shape' ? 'var(--color-layer-shape)' : null}
-    {ids}
-    ondown={() => pedal.down('shape')}
-    onup={() => pedal.up('shape')}
-    onactive={active('shape')}
-  />
+  <g opacity={dim('voice')} data-control="voice" data-dimmed={dim('voice') < 1}>
+    <PushButton
+      {...VOICE_BUTTON}
+      name="Voice: harmony voices {s.current.voiceOn ? 'on' : 'off'}"
+      pressed={s.current.voiceOn}
+      tint={layer === 'voice' ? 'var(--color-layer-voice)' : null}
+      {ids}
+      ondown={() => pedal.down('voice')}
+      onup={() => pedal.up('voice')}
+      onactive={active('voice')}
+    />
+  </g>
+  <g opacity={dim('shape')} data-control="shape" data-dimmed={dim('shape') < 1}>
+    <PushButton
+      {...SHAPE_BUTTON}
+      name="Shape: {shapeNames[s.current.shape].toLowerCase()}"
+      tint={layer === 'shape' ? 'var(--color-layer-shape)' : null}
+      {ids}
+      ondown={() => pedal.down('shape')}
+      onup={() => pedal.up('shape')}
+      onactive={active('shape')}
+    />
+  </g>
   <Led
     name="shape-triangle"
     x={SHAPE_LEDS.triangle}
@@ -281,21 +290,23 @@
   />
 
   {#each knobs as k (k.id)}
-    <Knob
-      x={k.x}
-      y={k.y}
-      color={k.color}
-      name={k.p.name}
-      value={k.value}
-      valueText={describe(k.p.id, k.value)}
-      steps={k.p.steps?.length}
-      ringColor={stageColors[k.p.stage]}
-      highlighted={highlight.includes(k.id)}
-      {ids}
-      onchange={(v) => pedal.turn(k.id, v)}
-      onreset={() => pedal.resetKnob(k.id)}
-      onactive={active(k.id)}
-    />
+    <g opacity={dim(k.id)} data-control={k.id} data-dimmed={dim(k.id) < 1}>
+      <Knob
+        x={k.x}
+        y={k.y}
+        color={k.color}
+        name={k.p.name}
+        value={k.value}
+        valueText={describe(k.p.id, k.value)}
+        steps={k.p.steps?.length}
+        ringColor={stageColors[k.p.stage]}
+        highlighted={highlight.includes(k.id) || (focus.includes(k.id) && dim(k.id) === 1)}
+        {ids}
+        onchange={(v) => pedal.turn(k.id, v)}
+        onreset={() => pedal.resetKnob(k.id)}
+        onactive={active(k.id)}
+      />
+    </g>
   {/each}
 
   <Led
@@ -307,14 +318,16 @@
     state={led.bypass}
     {ids}
   />
-  <Footswitch
-    {...FOOTSWITCH}
-    engaged={s.engaged}
-    {ids}
-    ondown={() => pedal.down('foot')}
-    onup={() => pedal.up('foot')}
-    onactive={active('footswitch')}
-  />
+  <g opacity={dim('footswitch')} data-control="footswitch" data-dimmed={dim('footswitch') < 1}>
+    <Footswitch
+      {...FOOTSWITCH}
+      engaged={s.engaged}
+      {ids}
+      ondown={() => pedal.down('foot')}
+      onup={() => pedal.up('foot')}
+      onactive={active('footswitch')}
+    />
+  </g>
 
   {#each PRESET_LEDS.xs as x, i (x)}
     <Led
@@ -328,19 +341,24 @@
       {ids}
     />
   {/each}
-  <PushButton
-    {...PRESET_BUTTON}
-    r={14}
-    look="preset"
-    name="Presets: {presetName}. Tap for the next preset, hold to copy or save"
-    {ids}
-    ondown={() => pedal.down('presets')}
-    onup={() => pedal.up('presets')}
-    onactive={active('presets')}
-  />
+  <g opacity={dim('presets')} data-control="presets" data-dimmed={dim('presets') < 1}>
+    <PushButton
+      {...PRESET_BUTTON}
+      r={14}
+      look="preset"
+      name="Presets: {presetName}. Tap for the next preset, hold to copy or save"
+      {ids}
+      ondown={() => pedal.down('presets')}
+      onup={() => pedal.up('presets')}
+      onactive={active('presets')}
+    />
+  </g>
 </svg>
 
 <style>
+  [data-control] {
+    transition: opacity 0.2s ease;
+  }
   .legends text {
     transition: fill 0.2s ease;
   }
