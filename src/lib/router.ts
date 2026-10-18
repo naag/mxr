@@ -17,7 +17,7 @@ const simple: Record<string, RouteName> = {
 
 /** Parses `location.hash` (e.g. `#/learn/5`) into a route. Unknown paths fall back to Play. */
 export function parseHash(hash: string): Route {
-  const path = hash.replace(/^#\/?/, '').replace(/\/+$/, '')
+  const path = hash.split('?')[0].replace(/^#\/?/, '').replace(/\/+$/, '')
   const [head = '', arg] = path.split('/')
 
   if (head === 'learn') {

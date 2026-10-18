@@ -10,6 +10,8 @@ describe('parseHash', () => {
     ['#/presets/', { name: 'presets' }],
     ['#/reference', { name: 'reference' }],
     ['#/nope', { name: 'play' }],
+    ['#/?p=1.1.0', { name: 'play' }],
+    ['#/flow?x=1', { name: 'flow' }],
   ])('parses %j', (hash, route) => {
     expect(parseHash(hash)).toEqual(route)
   })

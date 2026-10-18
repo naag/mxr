@@ -1,5 +1,6 @@
 <script lang="ts">
   import { url, type DefIds } from './defs'
+  import { pressable } from './press'
 
   interface Props {
     x: number
@@ -11,9 +12,12 @@
     pressed?: boolean
     /** Ring shown while `pressed` is true. */
     ringColor?: string
+    /** Colour wash over the cap while its layer is active (the manual's blue / green). */
+    tint?: string | null
     /** Cap style: light grey (VOICE, SHAPE) or the small dark-red PRESETS cap. */
     look?: 'grey' | 'preset'
-    onpress: () => void
+    ondown: () => void
+    onup: () => void
     onactive?: (active: boolean) => void
   }
 
@@ -25,19 +29,14 @@
     ids,
     pressed,
     ringColor = '#5EC8FF',
+    tint = null,
     look = 'grey',
-    onpress,
+    ondown,
+    onup,
     onactive,
   }: Props = $props()
 
   let down = $state(false)
-
-  function keyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onpress()
-    }
-  }
 </script>
 
 <g
@@ -47,17 +46,7 @@
   tabindex="0"
   aria-label={name}
   aria-pressed={pressed}
-  onclick={onpress}
-  onkeydown={keyDown}
-  onpointerdown={() => (down = true)}
-  onpointerup={() => (down = false)}
-  onpointerleave={() => {
-    down = false
-    onactive?.(false)
-  }}
-  onpointerenter={() => onactive?.(true)}
-  onfocus={() => onactive?.(true)}
-  onblur={() => onactive?.(false)}
+  {@attach pressable(() => ({ ondown, onup, onactive, onpressed: (p) => (down = p) }))}
 >
   <circle r={r + 14} fill="transparent" />
   {#if look === 'grey'}
@@ -67,6 +56,7 @@
     <circle r={r + 10} fill="none" stroke={ringColor} stroke-width="3" opacity={pressed ? 1 : 0} />
     <g class="cap" class:down>
       <circle {r} fill={url(ids.cap)} />
+      <circle {r} fill={tint ?? 'transparent'} opacity={tint ? 0.85 : 0} class="tint" />
       <ellipse cx={-r * 0.3} cy={-r * 0.33} rx={r * 0.43} ry={r * 0.27} fill={url(ids.spec)} />
     </g>
   {:else}
@@ -89,12 +79,16 @@
   .push {
     cursor: pointer;
     outline: none;
+    touch-action: none;
   }
   .cap {
     transition: transform 0.08s ease;
   }
   .cap.down {
     transform: scale(0.94);
+  }
+  .tint {
+    transition: opacity 0.15s ease;
   }
   .push:focus-visible .cap {
     filter: drop-shadow(0 0 6px var(--color-stage-filter));

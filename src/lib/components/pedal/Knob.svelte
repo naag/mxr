@@ -4,7 +4,6 @@
     angleFor,
     arcPath,
     clamp01,
-    clockLabel,
     DRAG_PIXELS,
     FINE_DRAG_FACTOR,
     KEY_STEP,
@@ -21,8 +20,10 @@
     /** Accessible name, e.g. "Cutoff". */
     name: string
     value: number
-    /** Extra words for screen readers after the clock position, e.g. "211 hertz". */
-    describe?: (value: number) => string
+    /** Full value text for screen readers, e.g. "10 o’clock, 211 Hz". */
+    valueText: string
+    /** Number of detents for stepped controls (keyboard moves one detent per press). */
+    steps?: number
     ringColor: string
     ids: DefIds
     onchange: (value: number) => void
@@ -30,8 +31,20 @@
     onactive?: (active: boolean) => void
   }
 
-  let { x, y, color, name, value, describe, ringColor, ids, onchange, onreset, onactive }: Props =
-    $props()
+  let {
+    x,
+    y,
+    color,
+    name,
+    value,
+    valueText,
+    steps,
+    ringColor,
+    ids,
+    onchange,
+    onreset,
+    onactive,
+  }: Props = $props()
 
   let dragging = $state(false)
   let hovered = $state(false)
@@ -40,7 +53,6 @@
 
   const angle = $derived(angleFor(value))
   const showRing = $derived(dragging || hovered || focused)
-  const valueText = $derived([clockLabel(value), describe?.(value)].filter(Boolean).join(', '))
 
   $effect(() => {
     onactive?.(showRing)
@@ -67,15 +79,17 @@
   }
 
   function keyDown(e: KeyboardEvent) {
-    const steps: Record<string, number> = {
-      ArrowUp: KEY_STEP,
-      ArrowRight: KEY_STEP,
-      ArrowDown: -KEY_STEP,
-      ArrowLeft: -KEY_STEP,
-      PageUp: PAGE_STEP,
-      PageDown: -PAGE_STEP,
+    const small = steps ? 1 / (steps - 1) : KEY_STEP
+    const big = steps ? small : PAGE_STEP
+    const deltas: Record<string, number> = {
+      ArrowUp: small,
+      ArrowRight: small,
+      ArrowDown: -small,
+      ArrowLeft: -small,
+      PageUp: big,
+      PageDown: -big,
     }
-    if (e.key in steps) onchange(clamp01(value + steps[e.key]))
+    if (e.key in deltas) onchange(clamp01(value + deltas[e.key]))
     else if (e.key === 'Home') onchange(0)
     else if (e.key === 'End') onchange(1)
     else return
@@ -87,7 +101,8 @@
     const handler = (e: WheelEvent) => {
       if (e.deltaY === 0) return
       e.preventDefault()
-      onchange(clamp01(value - Math.sign(e.deltaY) * KEY_STEP))
+      const step = steps ? 1 / (steps - 1) : KEY_STEP
+      onchange(clamp01(value - Math.sign(e.deltaY) * step))
     }
     node.addEventListener('wheel', handler, { passive: false })
     return () => node.removeEventListener('wheel', handler)

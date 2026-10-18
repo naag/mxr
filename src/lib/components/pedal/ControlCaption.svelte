@@ -1,23 +1,49 @@
 <script lang="ts">
-  import { controls, shapeNames, stageColors } from '../../content/controls'
-  import { clockLabel, toDial } from '../../pedal/knob'
-  import type { KnobId } from '../../pedal/layout'
-  import type { PedalState } from '../../pedal/pedal.svelte'
+  import {
+    buttonCopy,
+    paramCopy,
+    shapeNames,
+    stageColors,
+    statusCopy,
+  } from '../../content/controls'
+  import { describe } from '../../pedal/params'
+  import type { PedalStore } from '../../pedal/pedal.svelte'
 
-  let { pedal }: { pedal: PedalState } = $props()
+  let { pedal }: { pedal: PedalStore } = $props()
 
-  const copy = $derived(pedal.focused ? controls[pedal.focused] : null)
-  const value = $derived.by(() => {
+  const card = $derived.by(() => {
     const id = pedal.focused
-    if (!id) return shapeNames[pedal.shape].split(':')[0]
-    if (id in pedal.knobs) {
-      const v = pedal.knobs[id as KnobId]
-      return `${clockLabel(v)} · ${toDial(v).toFixed(1)}`
+    const s = pedal.state
+    if (!id) {
+      return {
+        title: 'Try it',
+        value: shapeNames[s.current.shape],
+        text: statusCopy.idle,
+        color: stageColors.osc,
+        left: undefined,
+        right: undefined,
+      }
     }
-    if (id === 'shape') return shapeNames[pedal.shape].split(':')[0]
-    if (id === 'voice') return pedal.voiceOn ? 'on' : 'off'
-    if (id === 'footswitch') return pedal.engaged ? 'synth on' : 'bypassed'
-    return pedal.preset === 0 ? 'live mode' : `preset ${pedal.preset}`
+    if (id === 'voice' || id === 'shape' || id === 'footswitch' || id === 'presets') {
+      const b = buttonCopy[id]
+      const value = {
+        voice: s.current.voiceOn ? 'on' : 'off',
+        shape: shapeNames[s.current.shape],
+        footswitch: s.engaged ? 'synth on' : 'bypassed',
+        presets: pedal.preset.info ? pedal.preset.info.code : 'live',
+      }[id]
+      return { title: b.label, value, text: b.oneLiner, color: stageColors[b.stage] }
+    }
+    const p = pedal.paramFor(id)
+    const copy = paramCopy[p.id]
+    return {
+      title: p.label,
+      value: describe(p.id, pedal.knobValue(id)),
+      text: copy.oneLiner,
+      color: stageColors[p.stage],
+      left: copy.left,
+      right: copy.right,
+    }
   })
 </script>
 
@@ -27,22 +53,15 @@
   aria-live="polite"
 >
   <div class="flex items-center gap-2">
-    <span
-      class="size-2 shrink-0 rounded-full"
-      style:background={copy ? stageColors[copy.stage] : 'var(--color-stage-osc)'}
-      aria-hidden="true"
+    <span class="size-2 shrink-0 rounded-full" style:background={card.color} aria-hidden="true"
     ></span>
-    <span class="text-[15px] font-semibold tracking-wide">{copy ? copy.label : 'Try it'}</span>
-    <span class="ml-auto text-right font-mono text-[12.5px] text-[#c9d1d9]">{value}</span>
+    <span class="text-[15px] font-semibold tracking-wide">{card.title}</span>
+    <span class="ml-auto text-right font-mono text-[12.5px] text-[#c9d1d9]">{card.value}</span>
   </div>
-  <p class="m-0 text-sm leading-relaxed text-[#b7c0c9]">
-    {copy
-      ? copy.oneLiner
-      : 'Drag a knob up or down, or use the arrow keys. Tap SHAPE, VOICE, the footswitch or PRESETS.'}
-  </p>
-  {#if copy?.left && copy.right}
+  <p class="m-0 text-sm leading-relaxed text-[#b7c0c9]">{card.text}</p>
+  {#if card.left && card.right}
     <div class="flex justify-between gap-3 text-xs text-subtle">
-      <span>← {copy.left}</span><span>{copy.right} →</span>
+      <span>← {card.left}</span><span>{card.right} →</span>
     </div>
   {/if}
 </div>

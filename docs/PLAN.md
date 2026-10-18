@@ -536,24 +536,35 @@ SHAPE, VOICE, bypass and a PRESETS counter. Phase 2 replaces it with `params.ts`
 state machine.
 
 ### Phase 2: Pedal brain (params, presets, state machine)
-- [ ] `params.ts` with all 6 × 3 parameters and mappings from reference §3–4.
-- [ ] `machine.ts`: footswitch, PRESETS, layers, scroll, copy/save, reset, freeze config,
+- [x] `params.ts` with all 6 × 3 parameters and mappings from reference §3–4.
+- [x] `machine.ts`: footswitch, PRESETS, layers, scroll, copy/save, reset, freeze config,
   modified flag, LED view-model.
-- [ ] Draft factory presets (reference §5), live mode + `localStorage`, URL share.
-- [ ] Secondary-layer UI: legend morph, layer toggle, stepped-knob detents.
-- [ ] Animated preset transitions.
-- [ ] Tests: exhaustive unit tests for the machine and params, E2E 4–6 and 11.
+- [x] Draft factory presets (reference §5), live mode + `localStorage`, URL share.
+- [x] Secondary-layer UI: legend morph, layer toggle, stepped-knob detents.
+- [x] Animated preset transitions.
+- [x] Tests: exhaustive unit tests for the machine and params, E2E 4–6 and 11.
 - **Done when:** every behavior in the manual's controls/presets sections works with
   visual feedback, still silent.
 
+Notes: the store (`pedal.svelte.ts`) is a thin reactive wrapper; all behavior is in the pure
+reducer `machine.ts`, driven by `now` so timing rules are unit-tested. Holding `V` or `S` on
+the keyboard reaches the VOICE / SHAPE layer. Factory reset (VOICE + SHAPE at power-up) exists
+in the machine but has no front-panel trigger yet; the Reference view can offer it later.
+
 ### Phase 3: DSP core (pure TypeScript)
-- [ ] Oscillators (PolyBLEP saw/square, triangle), sub divider, voice oscs, noise.
-- [ ] 4-pole ZDF ladder with saturation and resonance compensation, 2× oversampling.
-- [ ] Filter envelope (AD), amp envelope, glide, LFO, chorus, compressor, gate, output gain.
-- [ ] Karplus–Strong virtual bass. `pedal-dsp.ts` composition with tap outputs.
-- [ ] Tests: DSP unit suite (§7.1), with numeric tolerances documented in each test.
+- [x] Oscillators (PolyBLEP saw/square, triangle), sub divider, voice oscs, noise.
+- [x] 4-pole ZDF ladder with saturation and resonance compensation, 2× oversampling.
+- [x] Filter envelope (AD), amp envelope, glide, LFO, chorus, compressor, gate, output gain.
+- [x] Karplus–Strong virtual bass. `pedal-dsp.ts` composition with tap outputs.
+- [x] Tests: DSP unit suite (§7.1), with numeric tolerances documented in each test.
 - **Done when:** offline renders of every preset pass sanity tests (no clipping before the
   limiter, no NaNs, expected spectra trends).
+
+Notes: code is in `src/lib/audio/dsp/` plus `src/lib/audio/render.ts` (offline render of
+every tap). It renders at about 5% of one CPU core at 48 kHz (budget: 15%). The ladder's
+oversampling interpolates the input linearly and averages the output; proper half-band
+filters can come later if aliasing is audible at high resonance. The triangle is naive (its
+harmonics fall at 12 dB/octave, so it aliases very little).
 
 ### Phase 4: Audio engine & sound sources
 - [ ] AudioWorklet wrapper, engine lifecycle (start/suspend/resume), master volume, limiter,

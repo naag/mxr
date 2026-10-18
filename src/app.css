@@ -29,6 +29,9 @@
   --color-stage-dyn: #a6d96a;
   --color-stage-input: #8c99a8;
 
+  --color-led-green: #5fd35a;
+  --color-led-red: #e5484d;
+
   --color-layer-voice: #8fd3ff;
   --color-layer-shape: #8be59a;
 }

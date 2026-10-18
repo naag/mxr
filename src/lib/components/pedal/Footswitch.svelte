@@ -1,16 +1,18 @@
 <script lang="ts">
   import { url, type DefIds } from './defs'
+  import { pressable } from './press'
 
   interface Props {
     x: number
     y: number
     engaged: boolean
     ids: DefIds
-    onpress: () => void
+    ondown: () => void
+    onup: () => void
     onactive?: (active: boolean) => void
   }
 
-  let { x, y, engaged, ids, onpress, onactive }: Props = $props()
+  let { x, y, engaged, ids, ondown, onup, onactive }: Props = $props()
   let down = $state(false)
 
   const hex = (r: number) =>
@@ -18,13 +20,6 @@
       const t = ((30 + 60 * i) * Math.PI) / 180
       return `${(r * Math.cos(t)).toFixed(1)},${(r * Math.sin(t)).toFixed(1)}`
     }).join(' ')
-
-  function keyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onpress()
-    }
-  }
 </script>
 
 <g
@@ -34,17 +29,7 @@
   tabindex="0"
   aria-label="Footswitch: synth {engaged ? 'on' : 'bypassed'}"
   aria-pressed={engaged}
-  onclick={onpress}
-  onkeydown={keyDown}
-  onpointerdown={() => (down = true)}
-  onpointerup={() => (down = false)}
-  onpointerleave={() => {
-    down = false
-    onactive?.(false)
-  }}
-  onpointerenter={() => onactive?.(true)}
-  onfocus={() => onactive?.(true)}
-  onblur={() => onactive?.(false)}
+  {@attach pressable(() => ({ ondown, onup, onactive, onpressed: (p) => (down = p) }))}
 >
   <ellipse cx="13" cy="22" rx="98" ry="92" fill="#000" opacity="0.55" filter={url(ids.blur14)} />
   <polygon points={hex(92)} fill={url(ids.chrome)} />
@@ -75,6 +60,7 @@
   .footswitch {
     cursor: pointer;
     outline: none;
+    touch-action: none;
   }
   .cap {
     transition: transform 0.08s ease;

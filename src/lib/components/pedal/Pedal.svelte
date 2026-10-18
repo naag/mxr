@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { controls, jackInfo, shapeNames, stageColors } from '../../content/controls'
+  import { jackInfo, layerColors, shapeNames, stageColors } from '../../content/controls'
   import {
     BYPASS_LED,
     ENCLOSURE,
@@ -13,7 +13,8 @@
     VIEWBOX,
     VOICE_BUTTON,
   } from '../../pedal/layout'
-  import type { ControlId, PedalState } from '../../pedal/pedal.svelte'
+  import { describe, stepIndex } from '../../pedal/params'
+  import type { ControlId, PedalStore } from '../../pedal/pedal.svelte'
   import { makeDefIds, url } from './defs'
   import Footswitch from './Footswitch.svelte'
   import Jack from './Jack.svelte'
@@ -22,7 +23,7 @@
   import PedalDefs from './PedalDefs.svelte'
   import PushButton from './PushButton.svelte'
 
-  let { pedal }: { pedal: PedalState } = $props()
+  let { pedal }: { pedal: PedalStore } = $props()
 
   const uid = $props.id()
   const ids = makeDefIds(uid)
@@ -36,9 +37,56 @@
     }
   }
 
-  const presetBank = $derived(pedal.preset === 0 ? null : pedal.preset <= 4 ? 'green' : 'red')
-  const presetSlot = $derived(pedal.preset === 0 ? -1 : (pedal.preset - 1) % 4)
+  const s = $derived(pedal.state)
+  const layer = $derived(pedal.layer)
+  const led = $derived(pedal.leds)
+  const knobs = $derived(
+    KNOBS.map((k) => {
+      const p = pedal.paramFor(k.id)
+      const value = pedal.knobValue(k.id)
+      return { ...k, p, value }
+    }),
+  )
+
+  /** Small legends around SHAPE-layer controls, like the manual's diagram. */
+  const legends = $derived(
+    layer !== 'shape'
+      ? []
+      : knobs.flatMap((k) => {
+          const words = k.p.steps ?? k.p.legends
+          if (!words) return []
+          const current = k.p.steps
+            ? stepIndex(k.p, k.value)
+            : k.value <= 0.02
+              ? 0
+              : k.value >= 0.98
+                ? 1
+                : -1
+          const spots =
+            words.length === 3
+              ? [
+                  [k.x - 88, k.y + 88],
+                  [k.x, k.y - 94],
+                  [k.x + 88, k.y + 88],
+                ]
+              : [
+                  [k.x - 88, k.y + 88],
+                  [k.x + 88, k.y + 88],
+                ]
+          return words.map((text, i) => ({
+            key: `${k.id}-${i}`,
+            text,
+            x: spots[i][0],
+            y: spots[i][1],
+            on: i === current,
+          }))
+        }),
+  )
+
   const silk = 'font-family: var(--font-sans); font-weight: 700; font-stretch: 85%;'
+  const presetName = $derived(
+    pedal.preset.info ? `preset ${pedal.preset.info.code} ${pedal.preset.info.name}` : 'live mode',
+  )
 </script>
 
 <svg
@@ -46,6 +94,7 @@
   class="block h-auto w-full select-none"
   role="group"
   aria-label="MXR Bass Synth pedal"
+  data-layer={layer}
 >
   <PedalDefs {ids} />
 
@@ -121,9 +170,6 @@
       <path d="M587 114 L606 99 L606 114" />
       <path d="M631 114 L636 114 L636 99 L650 99 L650 114 L655 114" />
     </g>
-    {#each KNOBS as k (k.id)}
-      <text x={k.x} y={k.labelY} font-size="23" letter-spacing="0.6">{controls[k.id].label}</text>
-    {/each}
     <text x="62" y="627" transform="rotate(-90 62 627)" font-size="21" letter-spacing="0.6"
       >OUT</text
     >
@@ -162,20 +208,43 @@
     <polygon points="514,1195 514,1215 530,1205" />
   </g>
 
+  <!-- Knob legends: change with the active layer -->
+  <g
+    aria-hidden="true"
+    style={silk}
+    text-anchor="middle"
+    fill={layerColors[layer]}
+    data-layer={layer}
+    class="legends"
+  >
+    {#each knobs as k (k.id)}
+      <text x={k.x} y={k.labelY} font-size="23" letter-spacing="0.6">{k.p.label}</text>
+    {/each}
+    {#each legends as l (l.key)}
+      <text x={l.x} y={l.y} font-size="13" letter-spacing="0.5" fill-opacity={l.on ? 1 : 0.45}
+        >{l.text}</text
+      >
+    {/each}
+  </g>
+
   <!-- Buttons and LEDs -->
   <PushButton
     {...VOICE_BUTTON}
-    name="Voice: {pedal.voiceOn ? 'harmony voices on' : 'harmony voices off'}"
-    pressed={pedal.voiceOn}
+    name="Voice: harmony voices {s.current.voiceOn ? 'on' : 'off'}"
+    pressed={s.current.voiceOn}
+    tint={layer === 'voice' ? 'var(--color-layer-voice)' : null}
     {ids}
-    onpress={() => pedal.toggleVoice()}
+    ondown={() => pedal.down('voice')}
+    onup={() => pedal.up('voice')}
     onactive={active('voice')}
   />
   <PushButton
     {...SHAPE_BUTTON}
-    name="Shape: {shapeNames[pedal.shape].split(':')[0].toLowerCase()}"
+    name="Shape: {shapeNames[s.current.shape].toLowerCase()}"
+    tint={layer === 'shape' ? 'var(--color-layer-shape)' : null}
     {ids}
-    onpress={() => pedal.nextShape()}
+    ondown={() => pedal.down('shape')}
+    onup={() => pedal.up('shape')}
     onactive={active('shape')}
   />
   <Led
@@ -183,7 +252,7 @@
     x={SHAPE_LEDS.triangle}
     y={SHAPE_LEDS.y}
     color="green"
-    state={pedal.shape === 'triangle' ? 'on' : 'off'}
+    state={s.current.shape === 'triangle' ? 'on' : 'off'}
     {ids}
   />
   <Led
@@ -191,7 +260,7 @@
     x={SHAPE_LEDS.saw}
     y={SHAPE_LEDS.y}
     color="amber"
-    state={pedal.shape === 'saw' ? 'on' : 'off'}
+    state={s.current.shape === 'saw' ? 'on' : 'off'}
     {ids}
   />
   <Led
@@ -199,20 +268,22 @@
     x={SHAPE_LEDS.square}
     y={SHAPE_LEDS.y}
     color="red"
-    state={pedal.shape === 'square' ? 'on' : 'off'}
+    state={s.current.shape === 'square' ? 'on' : 'off'}
     {ids}
   />
 
-  {#each KNOBS as k (k.id)}
+  {#each knobs as k (k.id)}
     <Knob
       x={k.x}
       y={k.y}
       color={k.color}
-      name={controls[k.id].name}
-      value={pedal.knobs[k.id]}
-      ringColor={stageColors[controls[k.id].stage]}
+      name={k.p.name}
+      value={k.value}
+      valueText={describe(k.p.id, k.value)}
+      steps={k.p.steps?.length}
+      ringColor={stageColors[k.p.stage]}
       {ids}
-      onchange={(v) => pedal.setKnob(k.id, v)}
+      onchange={(v) => pedal.turn(k.id, v)}
       onreset={() => pedal.resetKnob(k.id)}
       onactive={active(k.id)}
     />
@@ -224,14 +295,15 @@
     y={BYPASS_LED.y}
     r={15}
     color="blue"
-    state={pedal.engaged ? 'on' : 'off'}
+    state={led.bypass}
     {ids}
   />
   <Footswitch
     {...FOOTSWITCH}
-    engaged={pedal.engaged}
+    engaged={s.engaged}
     {ids}
-    onpress={() => pedal.toggleEngaged()}
+    ondown={() => pedal.down('foot')}
+    onup={() => pedal.up('foot')}
     onactive={active('footswitch')}
   />
 
@@ -242,8 +314,8 @@
       y={PRESET_LEDS.y}
       r={10}
       unlit="frost"
-      color={presetBank === 'red' ? 'red' : 'green'}
-      state={i === presetSlot ? 'on' : 'off'}
+      color={led.presetColor}
+      state={led.presets[i]}
       {ids}
     />
   {/each}
@@ -251,9 +323,16 @@
     {...PRESET_BUTTON}
     r={14}
     look="preset"
-    name="Presets: {pedal.preset === 0 ? 'live mode' : `preset ${pedal.preset}`}. Next preset"
+    name="Presets: {presetName}. Tap for the next preset, hold to copy or save"
     {ids}
-    onpress={() => pedal.nextPreset()}
+    ondown={() => pedal.down('presets')}
+    onup={() => pedal.up('presets')}
     onactive={active('presets')}
   />
 </svg>
+
+<style>
+  .legends text {
+    transition: fill 0.2s ease;
+  }
+</style>
