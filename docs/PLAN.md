@@ -1,6 +1,10 @@
 # MXR Bass Synth Explorer: Product & Implementation Plan
 
-> Status: **draft for review** · Created 2026-10-18 · Owner: @naag
+> Status: **reviewed, decisions recorded in §11** · Created 2026-10-18 · Owner: @naag
+>
+> Visual mockup (private Claude artifact; interactive pedal, Play desktop and mobile,
+> Under the hood, Learn chapter 5, design language):
+> <https://claude.ai/artifact/VLFJfYPHoXTgFQucm1bFJD>
 >
 > Companion documents:
 > - [`pedal-reference.md`](./pedal-reference.md): what the real pedal does (from the official
@@ -36,6 +40,9 @@ controls.
   *educational model* that behaves like the manual describes.
 - A DAW plugin, MIDI controller support, or a user account / cloud save.
 - Polyphony. The real pedal is monophonic, and so are we.
+- Plugging in a real instrument (decided: no live input). TRACKING and GATE SENS are
+  explained and simulated, not measured.
+- A light theme or translations (decided: dark only, English only).
 
 ### Target audience
 - **Primary:** bassists who own or consider the pedal and want to understand the knobs.
@@ -93,7 +100,7 @@ on navigation. On wide screens the pedal is always visible. On mobile it collaps
 │   Expression ▮▮▮▯▯           │  │ CONTROL CARD: "CUTOFF: how bright the synth…" │  │
 │                              │  └───────────────────────────────────────────────┘  │
 ├──────────────────────────────┴─────────────────────────────────────────────────────┤
-│ SOURCE: (Riff ▾ Funk Drop) ▶ ■  ♩=96  │  Fretboard ▸ E|A|D|G frets 0–12  │ Live in ⚬ │
+│ SOURCE: (Riff ▾ Funk Drop) ▶ ■  ♩=96  │  Fretboard ▸ E|A|D|G frets 0–12  │ Keys Z X C │
 └────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -107,8 +114,8 @@ on navigation. On wide screens the pedal is always visible. On mobile it collaps
 
 ### 2.5 Sound sources
 
-A real pedal needs a bass plugged in. We offer four sources. The first three are in
-v1, and live input is a later phase:
+A real pedal needs a bass plugged in. The app has no live input (decided), so it
+offers three built-in sources:
 
 1. **Riff player:** original looping riffs (see `learning-content.md` §D) with
    tempo control. This is the default, so people hear something with one click.
@@ -116,14 +123,14 @@ v1, and live input is a later phase:
    string-plucked visuals.
 3. **Computer keyboard:** `Z X C V…` / `A S D F…` rows mapped to frets. Shown
    as a hint overlay.
-4. **Live input (phase 10):** plug a real bass in via an audio interface
-   (`getUserMedia`). Uses our own browser-side pitch tracker, so TRACKING and GATE SENS
-   become meaningful.
 
-For sources 1–3 the "bass" is synthesized (Karplus–Strong plucked string). It provides
+In all three, the "bass" is synthesized (Karplus–Strong plucked string). It provides
 the **dry signal** (so MIX, DRY THRU FX and bypass A/B are real), and it sends exact
 note events to the synth voice. That way we skip pitch detection, which is honest
-because chapter 0 explains what the real pedal has to do instead.
+because chapter 0 explains what the real pedal has to do instead. TRACKING and GATE
+SENS are still on the pedal and explained, and they're simulated in a simple way:
+GATE SENS decides whether soft (ghost) notes from the riff trigger the synth, and
+TRACKING adds the tracking delay a real detector needs for low notes.
 
 ### 2.6 Audio UX & safety
 - Audio starts only after a user gesture: a prominent **"Start sound"** button. Its first
@@ -205,31 +212,32 @@ alignment, and restrained motion.
 | Token | Value | Use |
 |---|---|---|
 | `--color-bg` | `#0D1014` | page background |
-| `--color-surface` / `-2` | `#151A20` / `#1C222A` | cards, panels |
-| `--color-line` | `#2A313A` | hairlines, grids |
-| `--color-text` / `-muted` | `#E8EAED` / `#9AA4AE` | text |
+| `--color-surface` / `-raised` | `#11161C` / `#151A20` | panels / buttons, inputs |
+| `--color-line` | `#1E252D` | hairlines, grids |
+| `--color-text` / `-muted` | `#E8EAED` / `#A3ADB7` | text |
 | `--color-pedal-body` | `#3C3F44` | enclosure (from product photo) |
 | `--color-knob-orange` | `#F26A10` | MIX, SUB MIX |
 | `--color-knob-teal` | `#5BB5BE` | CUTOFF, RES, ENVELOPE, MOD |
 | `--color-silk` | `#E6E4DF` | pedal screen print |
 | **Stage colors** (diagrams, scopes, halos) | | |
-| `--color-stage-osc` | amber `#F5A524` | oscillators, sub, voice, noise |
-| `--color-stage-filter` | teal `#3CC8D2` | cutoff, resonance |
-| `--color-stage-env` | violet `#A78BFA` | filter env, amp env |
-| `--color-stage-mod` | pink `#F472B6` | LFO, chorus |
-| `--color-stage-dyn` | lime `#A3E635` | comp, gate, output |
-| `--color-stage-dry` | slate `#94A3B8` | dry path |
+| `--color-stage-osc` | amber `#F2A93B` | oscillators, sub, voice, noise, glide |
+| `--color-stage-filter` | teal `#43C6CF` | cutoff, resonance |
+| `--color-stage-env` | violet `#A68BF5` | filter env, amp env |
+| `--color-stage-mod` | pink `#EE7BB8` | LFO, chorus |
+| `--color-stage-dyn` | lime `#A6D96A` | comp, gate, mix, output |
+| `--color-stage-input` | slate `#8C99A8` | your bass, tracking, dry path |
+| Layer legends | blue `#8FD3FF` / green `#8BE59A` | knob labels while VOICE / SHAPE is held (matches the manual's diagram) |
 
 Stage colors are checked for ≥ 3:1 contrast against surfaces. Color is never the only
-cue: every stage also has a label and icon. A light theme is optional (see §11, Q5).
-Tokens are defined so it's a palette swap, not a rewrite.
+cue: every stage also has a label and icon. Dark theme only (decided). These values
+match the mockup's "Design language" board.
 
 ### 4.3 Typography
-- **Inter** (UI, variable), **Space Grotesk** (display headings), **JetBrains Mono**
+- **Instrument Sans** (UI and headings, variable weight and width), **JetBrains Mono**
   (numeric readouts with tabular figures). Self-hosted via `@fontsource-variable/*`, with no
   third-party requests.
-- The pedal's own lettering uses a rounded geometric sans to evoke the screen print
-  ("bass synth" wordmark drawn as SVG paths).
+- The pedal's screen print uses Instrument Sans at 85% width, bold. The "bass synth"
+  wordmark uses **Comfortaa** Light, which is close to the rounded lowercase on the pedal.
 
 ### 4.4 The pedal drawing
 - Built as **one SVG component tree** at the real proportions of the enclosure
@@ -240,7 +248,9 @@ Tokens are defined so it's a palette swap, not a rewrite.
   footswitch with conic-gradient sheen, LEDs with bloom (`feGaussianBlur`) when lit,
   side jacks in perspective, and a soft drop shadow.
 - **Branding:** the "MXR" box logo and "bass synth" wordmark are redrawn, not copied
-  from photos. A `BRANDING` flag can swap in a generic mark if needed (§10).
+  from photos. MXR naming and the preset names stay (decided: private use).
+- The mockup's `Pedal` board is the visual reference for Phase 1: same coordinates,
+  gradients, scalloped knob outline and LED treatment.
 
 ### 4.5 Motion
 - Knob springs (`svelte/motion` `Spring`), LED fades, layer-swap crossfades, signal
@@ -303,11 +313,10 @@ at scaffold time. Check `svelte-check` compatibility before adopting TypeScript 
 │   │   │   │   ├── pluck.ts      # Karplus–Strong virtual bass
 │   │   │   │   └── pedal-dsp.ts  # composes the full chain; process(block) → outputs + taps
 │   │   │   ├── worklets/
-│   │   │   │   ├── pedal.worklet.ts   # AudioWorkletProcessor wrapping pedal-dsp
-│   │   │   │   └── tracker.worklet.ts # (phase 10) YIN pitch tracker for live input
+│   │   │   │   └── pedal.worklet.ts   # AudioWorkletProcessor wrapping pedal-dsp
 │   │   │   ├── engine.ts         # AudioContext lifecycle, graph, analysers per tap, limiter
 │   │   │   ├── offline.ts        # renderPatch(params, notes, ms) via pedal-dsp (Web Worker)
-│   │   │   └── sources/          # riff sequencer, fretboard/keyboard input, live input
+│   │   │   └── sources/          # riff sequencer, fretboard and keyboard input
 │   │   ├── viz/
 │   │   │   ├── draw/             # pure drawing functions (scope, spectrum, envelope…)
 │   │   │   ├── analysis.ts       # FFT helpers, trigger detection, spectral centroid
@@ -350,7 +359,6 @@ Unit tests are colocated (`ladder.test.ts` next to `ladder.ts`).
 ```
  [Riff/Fretboard/Keys] ──note events──┐
  [Pluck (virtual bass)] ──dry audio───┤
- [Live input (phase 10)] ─────────────┤
                                        ▼
                     ┌───────── AudioWorkletNode "pedal" ─────────┐
                     │ tracking → osc → filter → amp → chorus →    │── out 0 (stereo main) ──► Gain (master) ──► Limiter ──► destination
@@ -446,8 +454,8 @@ audio needs a gesture, and the hardware silent switch can mute Web Audio. Show a
     `#/learn/6` opens chapter 6.
 11. **Share link:** copy the URL with a patch → open it in a new page → same knob values.
 12. **Responsive:** mobile project: the layer toggle works, visual tabs swipe, no horizontal scroll.
-13. **(Phase 10) Live input:** Chromium with `--use-fake-device-for-media-stream
-    --use-file-for-fake-audio-capture=tests/e2e/fixtures/bass-e1.wav` → the tracker reports E1.
+13. **Calibration regression:** offline renders of each preset stay within tolerance of
+    the reference numbers measured from the real pedal (see Phase 4b).
 
 ### 7.3 Playwright configuration notes
 - `webServer`: `npm run build -- --mode test && npm run preview -- --port 4173`. The `test` mode
@@ -545,8 +553,25 @@ the app deployable. Checkboxes track progress.
 - [ ] Bypass, MIX, DRY THRU FX, output modes (mono / wet-dry → L/R / stereo), freeze.
 - [ ] "Start sound" UX, mute, output meter, iOS hints.
 - [ ] Test hooks + E2E 7–8.
-- **Done when:** all presets are playable with every source in all supported browsers, and a
-  listening review is done (tune preset values and mappings by ear).
+- **Done when:** all presets are playable with every source in all supported browsers.
+
+### Phase 4b: Calibration against the real MB301
+The owner has the real pedal, so the assumptions in `pedal-reference.md` get checked
+against it instead of guessed from demo videos.
+- [ ] Record reference clips: a DI bass (or a re-amped test riff from the app's riff
+  player) through the real pedal into an audio interface, once per factory preset and
+  for single-knob sweeps (CUTOFF, RESONANCE, ENVELOPE, MOD, GLIDE, SUB MIX).
+- [ ] Settle each **ASSUMPTION**: VOICE intervals, sub-oscillator waveform, MOD rate and
+  MOD BLEND direction, whether Live mode sits in the PRESETS cycle, footswitch hold time,
+  knob-to-value curves.
+- [ ] Note each factory preset's real knob positions on the pedal itself (preset
+  values aren't printed anywhere, so dial them in by ear until they match). Replace the draft
+  recipes in `pedal-reference.md` §5.
+- [ ] Log findings in `docs/calibration.md`. Store derived numbers (spectral centroid
+  over time, envelope timing, levels) as JSON fixtures for E2E 13; keep the raw audio out
+  of the repo.
+- **Done when:** every ASSUMPTION is confirmed or corrected, and an A/B listening
+  session finds each preset recognizably close.
 
 ### Phase 5: Core visualizations
 - [ ] rAF scheduler, analysis helpers, offline-render worker.
@@ -584,14 +609,9 @@ the app deployable. Checkboxes track progress.
 - [ ] Open Graph image, favicon, about/disclaimer page, README screenshots.
 - **Done when:** Lighthouse targets are met and there are no open P1 bugs.
 
-### Phase 10 (stretch): Real bass input & extras
-- [ ] Live input via `getUserMedia` (latency hints, input meter, monitor toggle).
-- [ ] YIN pitch tracker worklet, TRACKING ranges, GATE SENS with a running-average
-  level detector.
+### Phase 10 (stretch): Extras
 - [ ] "Recreate the preset" challenge with a similarity meter.
-- [ ] Optional: light theme, PWA/offline, i18n (DE/EN).
-- Tests: E2E 13 with a fake-audio-capture fixture, tracker accuracy unit tests on
-  recorded bass notes (E1–G3).
+- [ ] Optional: PWA / offline support.
 
 ---
 
@@ -608,8 +628,8 @@ the app deployable. Checkboxes track progress.
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Real pedal internals unknown (voice intervals, signal order, LFO rate, preset values) | Sound differs from the real unit | Mark assumptions in the reference doc and keep constants in one place. Tune by ear against official demo videos. Say so in-app ("educational model"). |
-| Trademark / trade dress (MXR, Dunlop, preset names, pedal look) | Takedown risk if public | Unofficial, non-commercial, educational. Clear disclaimer in footer and about page. Original drawings only, no photos or manual redistribution, link to the official manual. `BRANDING` flag for a generic look. |
+| Real pedal internals unknown (voice intervals, signal order, LFO rate, preset values) | Sound differs from the real unit | Mark assumptions in the reference doc and keep constants in one place. Calibrate against the owner's real MB301 (Phase 4b). Say so in-app ("educational model"). |
+| Trademark (MXR, Dunlop, preset names, pedal look) | Low: private use | Keep the disclaimer in the footer. Original drawings only, no photos or manual redistribution, link to the official manual. Revisit if the app is ever made public. |
 | Web Audio differences (Safari, iOS) | Glitches, no sound | AudioWorklet is supported everywhere now. Test on WebKit in CI. Show an iOS silent-switch hint. Offline visuals still work without sound. |
 | DSP CPU on low-end phones | Dropouts | Oversampling switch, adaptive viz frame rate, pause off-screen visuals. |
 | Flaky audio/visual tests | CI noise | Deterministic offline renders for assertions. Real-time audio tests only check coarse levels. Visual baselines generated only in the CI container. |
@@ -618,15 +638,16 @@ the app deployable. Checkboxes track progress.
 
 ---
 
-## 11. Open questions for review
+## 11. Decisions (reviewed 2026-10-18)
 
-1. **Framework:** OK with **Svelte 5 + Vite + Tailwind v4**? (The alternative would be React 19 +
-   Vite + Tailwind + shadcn/ui, which has a bigger ecosystem but more re-render work for
-   60 fps knob-driven visuals.)
-2. **Hosting:** GitHub Pages at `naag.github.io/mxr`, or another host or custom domain?
-3. **Branding:** use MXR naming and preset names with a disclaimer (current plan), or go
-   generic?
-4. **Scope of v1:** include real bass input (Phase 10) in v1, or keep it as a stretch?
-5. **Light theme** needed, or dark only?
-6. **Language:** English only, or also German?
-7. **Preset tuning:** is there access to a real MB301 for A/B-ing the draft preset values?
+| # | Question | Decision |
+|---|---|---|
+| 1 | Framework | **Svelte 5 + Vite + Tailwind v4** (as proposed) |
+| 2 | Hosting | **GitHub Pages** at `naag.github.io/mxr` |
+| 3 | Branding | **Keep MXR naming and preset names.** Private use, disclaimer stays |
+| 4 | Real bass input | **Not planned.** Built-in riff, fretboard and keyboard only |
+| 5 | Theme | **Dark only** |
+| 6 | Language | **English only** |
+| 7 | Preset tuning | **Owner has a real MB301.** Calibration is Phase 4b |
+
+Still open: feedback on the mockup's look (pedal drawing, colors, type, layout density).

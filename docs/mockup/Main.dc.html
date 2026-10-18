@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Play · Bass Synth Explorer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0D1014}
+a{color:#7FD8DF}a:hover{color:#B5ECF0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0D1014; color: #E8EAED; font-family: 'Instrument Sans', system-ui, sans-serif">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 14px 28px; border-bottom: 1px solid #1B2229">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 36px; height: 36px; border-radius: 10px; background: #151A20; border: 1px solid #262E37; display: flex; align-items: center; justify-content: center">
+<svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 24 L13 9 V24 L22 9 V24" stroke="#F2A93B" style="stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round"></path><path d="M3 15 C 14 15, 20 15, 23 10 C 25 7, 26 20, 29 27" stroke="#43C6CF" style="stroke-width: 2.2; stroke-linecap: round"></path></svg>
+</div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 16px; font-weight: 650; letter-spacing: -0.01em">Bass Synth Explorer</span>
+<span style="font-size: 12px; color: #8F99A3">for the MXR MB301 · unofficial</span>
+</div>
+</div>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 4px">
+<a href="Main.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #1A2129; color: #E8EAED; font-size: 14px; font-weight: 600; text-decoration: none">Play</a>
+<a href="Flow.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #A3ADB7; font-size: 14px; font-weight: 500; text-decoration: none">Under the hood</a>
+<a href="Learn.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #A3ADB7; font-size: 14px; font-weight: 500; text-decoration: none">Learn</a>
+<a href="#presets" style="padding: 8px 12px; border-radius: 8px; color: #A3ADB7; font-size: 14px; font-weight: 500; text-decoration: none">Presets</a>
+<a href="#reference" style="padding: 8px 12px; border-radius: 8px; color: #A3ADB7; font-size: 14px; font-weight: 500; text-decoration: none">Reference</a>
+</nav>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 14px">
+<div aria-label="Output level" style="display: flex; align-items: flex-end; gap: 3px; height: 18px">
+<span style="width: 4px; height: 6px; border-radius: 2px; background: #A6D96A"></span>
+<span style="width: 4px; height: 9px; border-radius: 2px; background: #A6D96A"></span>
+<span style="width: 4px; height: 12px; border-radius: 2px; background: #A6D96A"></span>
+<span style="width: 4px; height: 15px; border-radius: 2px; background: #D9C85A"></span>
+<span style="width: 4px; height: 18px; border-radius: 2px; background: #2A313A"></span>
+</div>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #A3ADB7">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4V5z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9 9 0 0 1 0 13"></path></svg>
+<span>Volume</span>
+<input type="range" min="0" max="100" value="62" style="width: 110px; accent-color: #43C6CF">
+</label>
+<button type="button" aria-pressed="true" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid #2C5A5E; background: rgba(67, 198, 207, 0.12); color: #CFF3F5; font-family: inherit; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer">
+<span style="width: 8px; height: 8px; border-radius: 50%; background: #43C6CF; box-shadow: 0 0 8px #43C6CF"></span>Sound on
+</button>
+</div>
+</header>
+
+<main style="max-width: 1440px; margin: 0 auto; padding: 24px 28px 28px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<div style="flex: 1 1 380px; max-width: 500px; min-width: 0; margin: 0 auto">
+<dc-import name="Pedal" focus="cutoff" caption="{{ false }}" hint-size="100%,920px"></dc-import>
+</div>
+
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+<div aria-label="Signal chain" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 12px; background: #11161C; border: 1px solid #1E252D; border-radius: 14px">
+<span style="font-size: 12px; color: #8F99A3; margin-right: 6px; letter-spacing: 0.04em">SIGNAL</span>
+<sc-for list="{{chain}}" as="c" hint-placeholder-count="8">
+<span style="display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 500; border: 1px solid {{c.border}}; background: {{c.bg}}; color: {{c.fg}}">
+<span style="width: 7px; height: 7px; border-radius: 50%; background: {{c.color}}"></span>{{c.label}}
+</span>
+<sc-if value="{{c.arrow}}" hint-placeholder-val="{{ true }}">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A5562" style="stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+</sc-if>
+</sc-for>
+<a href="Flow.dc.html" style="margin-left: auto; font-size: 13px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 4px">Open signal flow<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+
+<section aria-labelledby="scopeTitle" style="flex: 3 1 460px; min-width: 0; background: #11161C; border: 1px solid #1E252D; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 id="scopeTitle" style="margin: 0; font-size: 15px; font-weight: 600">Waveform</h2>
+<span style="font-size: 12.5px; color: #8F99A3">What the speaker does, cycle by cycle</span>
+</div>
+<div role="group" aria-label="Where to look" style="margin-left: auto; display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #0D1115; border: 1px solid #1E252D">
+<button type="button" aria-pressed="false" style="min-height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: #A3ADB7; font-family: inherit; font-size: 12.5px; cursor: pointer">Oscillator</button>
+<button type="button" aria-pressed="true" style="min-height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: rgba(67, 198, 207, 0.16); color: #BDEFF2; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">After filter</button>
+<button type="button" aria-pressed="false" style="min-height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: #A3ADB7; font-family: inherit; font-size: 12.5px; cursor: pointer">Amp</button>
+<button type="button" aria-pressed="false" style="min-height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: #A3ADB7; font-family: inherit; font-size: 12.5px; cursor: pointer">Output</button>
+</div>
+</div>
+<svg viewBox="0 0 800 220" style="width: 100%; height: auto; display: block" role="img" aria-label="Waveform: a sawtooth wave from the oscillator, and the smoother, ringing wave that comes out of the filter">
+<defs>
+<filter id="mGlow" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="4"></feGaussianBlur></filter>
+</defs>
+<g stroke="#1B222A" style="stroke-width: 1">
+<path d="M0 30 H800 M0 70 H800 M0 150 H800 M0 190 H800"></path>
+<path d="M80 0 V220 M160 0 V220 M240 0 V220 M400 0 V220 M480 0 V220 M560 0 V220 M720 0 V220"></path>
+</g>
+<path d="M0 110 H800" stroke="#2A323C" style="stroke-width: 1.2"></path>
+<path d="M320 8 V212 M640 8 V212" stroke="#3A4450" style="stroke-width: 1.2; stroke-dasharray: 3 5"></path>
+<path d="{{scopeRaw}}" fill="none" stroke="#F2A93B" opacity="0.55" style="stroke-width: 1.8; stroke-dasharray: 5 4; stroke-linejoin: round"></path>
+<path d="{{scopeFil}}" fill="none" stroke="#43C6CF" opacity="0.35" filter="url(#mGlow)" style="stroke-width: 6"></path>
+<path d="{{scopeFil}}" fill="none" stroke="#43C6CF" style="stroke-width: 2.6; stroke-linejoin: round"></path>
+<g style="font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #7D8893">
+<text x="326" y="20">1 cycle</text>
+<text x="646" y="20">2 cycles</text>
+</g>
+</svg>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 12.5px; color: #A3ADB7">
+<span style="display: inline-flex; align-items: center; gap: 8px"><svg width="22" height="8" aria-hidden="true"><path d="M1 4 H21" stroke="#F2A93B" style="stroke-width: 2; stroke-dasharray: 4 3"></path></svg>Oscillator (before the filter)</span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><svg width="22" height="8" aria-hidden="true"><path d="M1 4 H21" stroke="#43C6CF" style="stroke-width: 3"></path></svg>After the filter</span>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #C9D1D9">A1 · 55.0 Hz · 1 cycle = 18.2 ms</span>
+</div>
+</section>
+
+<aside aria-labelledby="cardTitle" style="flex: 2 1 300px; min-width: 0; background: #11161C; border: 1px solid #1E252D; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px">
+<svg width="40" height="40" viewBox="-50 -50 100 100" aria-hidden="true"><circle r="44" fill="#5BB5BE"></circle><circle r="44" fill="none" stroke="#000000" opacity="0.25" style="stroke-width: 3"></circle><rect x="-4" y="-42" width="8" height="26" rx="4" fill="#FBFAF6" transform="rotate(-60)"></rect></svg>
+<div style="display: flex; flex-direction: column; gap: 1px">
+<span style="font-size: 11.5px; color: #8F99A3; letter-spacing: 0.08em">FILTER STAGE</span>
+<h2 id="cardTitle" style="margin: 0; font-size: 21px; font-weight: 650; letter-spacing: -0.01em">Cutoff</h2>
+</div>
+<div style="margin-left: auto; text-align: right; font-family: 'JetBrains Mono', monospace">
+<div style="font-size: 15px; color: #E8EAED; font-weight: 600">211 Hz</div>
+<div style="font-size: 12px; color: #8F99A3">10 o’clock</div>
+</div>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #C9D1D9">How bright the synth is. The filter lets the low part of the sound through and blocks the fizzy highs.</p>
+<div style="display: flex; gap: 8px">
+<div style="flex: 1; padding: 10px 12px; border-radius: 10px; background: #0D1115; border: 1px solid #1E252D">
+<div style="font-size: 11.5px; color: #8F99A3; letter-spacing: 0.06em">TURN LEFT</div>
+<div style="font-size: 14px; margin-top: 3px">Darker, muffled</div>
+</div>
+<div style="flex: 1; padding: 10px 12px; border-radius: 10px; background: #0D1115; border: 1px solid #1E252D">
+<div style="font-size: 11.5px; color: #8F99A3; letter-spacing: 0.06em">TURN RIGHT</div>
+<div style="font-size: 14px; margin-top: 3px">Brighter, buzzier</div>
+</div>
+</div>
+<div style="padding: 12px; border-radius: 10px; background: #0D1115; border: 1px solid #1E252D; display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 11.5px; color: #8F99A3; letter-spacing: 0.06em">RIGHT NOW</div>
+<div style="display: flex; justify-content: space-between; font-size: 13.5px"><span style="color: #A3ADB7">Knob setting</span><span style="font-family: 'JetBrains Mono', monospace">211 Hz</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 13.5px"><span style="color: #A3ADB7">Envelope pushes it to</span><span style="font-family: 'JetBrains Mono', monospace">844 Hz</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 13.5px"><span style="color: #A3ADB7">This moment</span><span style="font-family: 'JetBrains Mono', monospace; color: #7FD8DF">520 Hz</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto">
+<a href="#spectrum" style="flex: 1 1 auto; min-height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid #2C5A5E; background: rgba(67, 198, 207, 0.1); color: #CFF3F5; font-size: 13.5px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>See it on the spectrum</a>
+<a href="Learn.dc.html" style="flex: 1 1 auto; min-height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid #2A313A; background: #151A20; color: #E8EAED; font-size: 13.5px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z"></path><path d="M4 19a2 2 0 0 1 2-2h13"></path></svg>Lesson 5: the filter</a>
+</div>
+</aside>
+</div>
+
+<section id="spectrum" aria-labelledby="specTitle" style="background: #11161C; border: 1px solid #1E252D; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 id="specTitle" style="margin: 0; font-size: 15px; font-weight: 600">Spectrum</h2>
+<span style="font-size: 12.5px; color: #8F99A3">Which harmonics are in the sound, and how loud each one is</span>
+</div>
+<div role="group" aria-label="Detail level" style="margin-left: auto; display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #0D1115; border: 1px solid #1E252D">
+<button type="button" aria-pressed="{{simplePressed}}" onClick="{{setSimple}}" style="min-height: 30px; padding: 0 12px; border: 0; border-radius: 7px; font-family: inherit; font-size: 12.5px; cursor: pointer; background: {{simpleBg}}; color: {{simpleFg}}">Simple</button>
+<button type="button" aria-pressed="{{detailPressed}}" onClick="{{setDetail}}" style="min-height: 30px; padding: 0 12px; border: 0; border-radius: 7px; font-family: inherit; font-size: 12.5px; cursor: pointer; background: {{detailBg}}; color: {{detailFg}}">Detailed</button>
+</div>
+</div>
+<svg viewBox="0 0 800 262" style="width: 100%; height: auto; display: block" role="img" aria-label="Spectrum: harmonic bars of a 55 Hz note. A resonant low-pass filter curve with a peak at 520 Hz lets the low harmonics through and makes the high ones quieter.">
+<defs>
+<filter id="sGlow" x="-5%" y="-20%" width="110%" height="140%"><feGaussianBlur stdDeviation="4"></feGaussianBlur></filter>
+</defs>
+<g stroke="#1B222A" opacity="{{detailOp}}" style="stroke-width: 1">
+<path d="{{gridY}}"></path>
+<path d="{{gridX}}"></path>
+</g>
+<path d="M0 230 H800" stroke="#2A323C" style="stroke-width: 1.2"></path>
+<path d="{{specArea}}" fill="#43C6CF" opacity="0.07"></path>
+<path d="{{specRaw}}" stroke="#F2A93B" opacity="0.2" style="stroke-width: 2.2"></path>
+<path d="{{specFil}}" stroke="#F2A93B" style="stroke-width: 2.4"></path>
+<path d="{{specCurve}}" fill="none" stroke="#43C6CF" opacity="0.4" filter="url(#sGlow)" style="stroke-width: 6"></path>
+<path d="{{specCurve}}" fill="none" stroke="#43C6CF" style="stroke-width: 2.6; stroke-linejoin: round"></path>
+<path d="M{{fcx}} 30 V230" stroke="#43C6CF" opacity="0.7" style="stroke-width: 1.2; stroke-dasharray: 3 4"></path>
+<g style="font-family: 'Instrument Sans', sans-serif; font-size: 12.5px; font-weight: 600">
+<text x="{{fcxLabel}}" y="22" style="fill: #7FD8DF">cutoff right now · 520 Hz</text>
+</g>
+<g style="font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #C9D1D9; text-anchor: middle">
+<text x="{{h0.x}}" y="{{h0.y}}">1×</text>
+<text x="{{h1.x}}" y="{{h1.y}}">2×</text>
+<text x="{{h2.x}}" y="{{h2.y}}">3×</text>
+<text x="{{h3.x}}" y="{{h3.y}}">4×</text>
+<text x="{{h4.x}}" y="{{h4.y}}">6×</text>
+<text x="{{h5.x}}" y="{{h5.y}}">8×</text>
+</g>
+<g opacity="{{detailOp}}" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #6F7A86; text-anchor: middle">
+<text x="114.6" y="252">50</text>
+<text x="201.3" y="252">100</text>
+<text x="288" y="252">200</text>
+<text x="402.6" y="252">500</text>
+<text x="489.2" y="252">1k</text>
+<text x="575.9" y="252">2k</text>
+<text x="690.5" y="252">5k</text>
+<text x="770" y="252">10k Hz</text>
+</g>
+<g opacity="{{detailOp}}" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #6F7A86">
+<text x="6" y="21.7">+12 dB</text>
+<text x="6" y="53.1">0 dB</text>
+<text x="6" y="116">−24</text>
+<text x="6" y="178.9">−48</text>
+</g>
+<g opacity="{{simpleOp}}" style="font-family: 'Instrument Sans', sans-serif; font-size: 13px; fill: #8F99A3">
+<text x="110" y="252">low · warm</text>
+<text x="700" y="252" style="text-anchor: end">high · fizzy</text>
+</g>
+</svg>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 12.5px; color: #A3ADB7">
+<span style="display: inline-flex; align-items: center; gap: 8px"><svg width="14" height="12" aria-hidden="true"><path d="M3 12 V2 M7 12 V5 M11 12 V7" stroke="#F2A93B" style="stroke-width: 2"></path></svg>Harmonics: 55 Hz and its multiples</span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><svg width="14" height="12" aria-hidden="true"><path d="M3 12 V2 M7 12 V5 M11 12 V7" stroke="#F2A93B" opacity="0.3" style="stroke-width: 2"></path></svg>Before the filter</span>
+<span style="display: inline-flex; align-items: center; gap: 8px"><svg width="22" height="8" aria-hidden="true"><path d="M1 4 H21" stroke="#43C6CF" style="stroke-width: 3"></path></svg>Filter shape (moves with the envelope)</span>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #C9D1D9">12 harmonics above −24 dB (15 before the filter) · peak +12 dB</span>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+
+<section aria-labelledby="envTitle" style="flex: 1 1 360px; min-width: 0; background: #11161C; border: 1px solid #1E252D; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 id="envTitle" style="margin: 0; font-size: 15px; font-weight: 600">Envelope</h2>
+<span style="font-size: 12.5px; color: #8F99A3">How brightness and volume move during one note</span>
+</div>
+<svg viewBox="0 0 800 250" style="width: 100%; height: auto; display: block" role="img" aria-label="Envelope: the cutoff jumps from 211 Hz to 844 Hz within 12 milliseconds and falls back over about half a second. The volume starts instantly and fades when the note ends.">
+<g stroke="#1B222A" style="stroke-width: 1"><path d="M0 10 H800 M0 40.1 H800 M0 70.2 H800 M0 140 H800 M200 0 V226 M400 0 V226 M600 0 V226"></path></g>
+<path d="M0 107.6 H800" stroke="#5E6B78" style="stroke-width: 1.2; stroke-dasharray: 4 4"></path>
+<path d="{{envCutArea}}" fill="#A68BF5" opacity="0.13"></path>
+<path d="{{envCut}}" fill="none" stroke="#A68BF5" style="stroke-width: 2.6; stroke-linejoin: round"></path>
+<g transform="translate(0 166)">
+<path d="M0 56 H800" stroke="#2A323C" style="stroke-width: 1"></path>
+<path d="{{envAmpArea}}" fill="#A68BF5" opacity="0.1"></path>
+<path d="{{envAmp}}" fill="none" stroke="#C7B6FF" style="stroke-width: 2; stroke-linejoin: round"></path>
+<path d="M520 0 V56" stroke="#5E6B78" style="stroke-width: 1; stroke-dasharray: 3 4"></path>
+</g>
+<path d="M{{playX}} 0 V226" stroke="#E8EAED" opacity="0.55" style="stroke-width: 1.2"></path>
+<circle cx="{{playX}}" cy="{{playY}}" r="5.5" fill="#43C6CF" stroke="#0D1014" style="stroke-width: 2"></circle>
+<g style="font-family: 'Instrument Sans', sans-serif; font-size: 13px">
+<text x="28" y="40" style="fill: #CDBEFF; font-weight: 600">peak 844 Hz</text>
+<text x="104" y="74" style="fill: #7FD8DF; font-weight: 600">now 520 Hz</text>
+<text x="794" y="100" style="fill: #8F99A3; text-anchor: end">CUTOFF knob · 211 Hz</text>
+<text x="794" y="134" style="fill: #CDBEFF; text-anchor: end; font-weight: 600">Brightness (cutoff)</text>
+<text x="794" y="160" style="fill: #C7B6FF; text-anchor: end; font-weight: 600">Volume</text>
+<text x="526" y="186" style="fill: #8F99A3">note ends</text>
+</g>
+<g style="font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #6F7A86">
+<text x="2" y="246">0</text><text x="200" y="246" style="text-anchor: middle">200 ms</text><text x="400" y="246" style="text-anchor: middle">400 ms</text><text x="600" y="246" style="text-anchor: middle">600 ms</text><text x="798" y="246" style="text-anchor: end">800 ms</text>
+</g>
+</svg>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #C9D1D9">ENVELOPE 11 o’clock → attack 10 ms, decay 290 ms · FILTER ENV AMT +2 oct</div>
+</section>
+
+<section aria-labelledby="pitchTitle" style="flex: 1 1 360px; min-width: 0; background: #11161C; border: 1px solid #1E252D; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 id="pitchTitle" style="margin: 0; font-size: 15px; font-weight: 600">Pitch</h2>
+<span style="font-size: 12.5px; color: #8F99A3">Which note the synth plays, over one bar of the riff</span>
+</div>
+<svg viewBox="0 0 800 250" style="width: 100%; height: auto; display: block" role="img" aria-label="Pitch over time: the Funk Drop riff moves between G1 and E2. Glide is off, so the pitch jumps from note to note.">
+<g stroke="#1B222A" style="stroke-width: 1"><path d="M44 30 H800 M44 70 H800 M44 110 H800 M44 170 H800 M44 210 H800"></path><path d="M244 0 V226 M444 0 V226 M644 0 V226" stroke="#232B34"></path></g>
+<g style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; fill: #8F99A3">
+<text x="0" y="34">E2</text><text x="0" y="74">D2</text><text x="0" y="114">C2</text><text x="0" y="174">A1</text><text x="0" y="214">G1</text>
+</g>
+<g fill="rgba(242, 169, 59, 0.16)" stroke="#F2A93B" opacity="0.9" style="stroke-width: 1.2">
+<rect x="44" y="163" width="92" height="14" rx="4"></rect>
+<rect x="188" y="163" width="42" height="14" rx="4" opacity="0.55"></rect>
+<rect x="238" y="103" width="42" height="14" rx="4"></rect>
+<rect x="332" y="163" width="92" height="14" rx="4"></rect>
+<rect x="432" y="63" width="42" height="14" rx="4"></rect>
+<rect x="482" y="23" width="42" height="14" rx="4"></rect>
+<rect x="532" y="63" width="42" height="14" rx="4"></rect>
+<rect x="582" y="103" width="42" height="14" rx="4"></rect>
+<rect x="632" y="163" width="92" height="14" rx="4"></rect>
+<rect x="732" y="203" width="42" height="14" rx="4"></rect>
+</g>
+<path d="M44 170 H136 M188 170 H230 V110 H280 M332 170 H424 V70 H474 V30 H524 V70 H574 V110 H624 M632 170 H724 V210 H774" fill="none" stroke="#F2A93B" style="stroke-width: 2.6; stroke-linejoin: round"></path>
+<path d="M366 0 V226" stroke="#E8EAED" opacity="0.55" style="stroke-width: 1.2"></path>
+<circle cx="366" cy="170" r="5.5" fill="#F2A93B" stroke="#0D1014" style="stroke-width: 2"></circle>
+<text x="374" y="156" style="font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 600; fill: #F7C77A">now A1</text>
+<g style="font-family: 'JetBrains Mono', monospace; font-size: 11px; fill: #6F7A86; text-anchor: middle">
+<text x="44" y="246" style="text-anchor: start">beat 1</text><text x="244" y="246">2</text><text x="444" y="246">3</text><text x="644" y="246">4</text>
+</g>
+</svg>
+<div style="font-size: 12.5px; color: #A3ADB7">GLIDE is off, so the pitch jumps. Hold VOICE and turn RESONANCE to make it slide.</div>
+</section>
+</div>
+</div>
+
+<section aria-label="Sound source" style="flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; padding: 14px 18px; background: #11161C; border: 1px solid #1E252D; border-radius: 16px">
+<button type="button" aria-label="Pause riff" style="width: 52px; height: 52px; border-radius: 50%; border: 0; background: #F2A93B; color: #1A1206; display: flex; align-items: center; justify-content: center; cursor: pointer; flex: 0 0 auto">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 3.2; stroke-linecap: round" aria-hidden="true"><path d="M9 5v14M15 5v14"></path></svg>
+</button>
+<div role="group" aria-label="Sound source" style="display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #0D1115; border: 1px solid #1E252D">
+<button type="button" aria-pressed="true" style="min-height: 34px; padding: 0 12px; border: 0; border-radius: 7px; background: rgba(242, 169, 59, 0.16); color: #F7C77A; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Riff</button>
+<button type="button" aria-pressed="false" style="min-height: 34px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; color: #A3ADB7; font-family: inherit; font-size: 13px; cursor: pointer">Fretboard</button>
+<button type="button" aria-pressed="false" style="min-height: 34px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; color: #A3ADB7; font-family: inherit; font-size: 13px; cursor: pointer">Keyboard</button>
+</div>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #A3ADB7">Riff
+<select style="min-height: 38px; padding: 0 10px; border-radius: 9px; border: 1px solid #2A313A; background: #151A20; color: #E8EAED; font-family: inherit; font-size: 13.5px">
+<option>Funk Drop</option><option>Octave Pump</option><option>Ghost Notes</option><option>Long Tones</option><option>Industrial</option><option>Four on the Floor</option><option>Held E</option>
+</select>
+</label>
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #A3ADB7">
+<span>Tempo</span>
+<button type="button" aria-label="Slower" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #2A313A; background: #151A20; color: #C9D1D9; cursor: pointer; font-family: inherit; font-size: 16px">−</button>
+<span style="font-family: 'JetBrains Mono', monospace; color: #E8EAED; min-width: 64px; text-align: center">96 BPM</span>
+<button type="button" aria-label="Faster" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #2A313A; background: #151A20; color: #C9D1D9; cursor: pointer; font-family: inherit; font-size: 16px">+</button>
+</div>
+<div style="flex: 1 1 360px; min-width: 0">
+<svg viewBox="0 0 520 64" style="width: 100%; max-width: 560px; height: auto; display: block" role="img" aria-label="Fretboard showing the note being played: open A string">
+<rect x="0" y="4" width="520" height="56" rx="6" fill="#1A1714"></rect>
+<rect x="0" y="4" width="8" height="56" fill="#D8D2C4"></rect>
+<g stroke="#5D5850" style="stroke-width: 2"><path d="M50 4 V60 M90 4 V60 M128 4 V60 M164 4 V60 M198 4 V60 M230 4 V60 M260 4 V60 M288 4 V60 M314 4 V60 M339 4 V60 M362 4 V60 M384 4 V60 M405 4 V60 M425 4 V60 M444 4 V60 M462 4 V60 M479 4 V60 M495 4 V60 M510 4 V60"></path></g>
+<g fill="#3A3630"><circle cx="109" cy="32" r="4"></circle><circle cx="181" cy="32" r="4"></circle><circle cx="245" cy="32" r="4"></circle><circle cx="301" cy="32" r="4"></circle><circle cx="373" cy="22" r="4"></circle><circle cx="373" cy="42" r="4"></circle></g>
+<g stroke="#B8B0A0" style="stroke-width: 1.2"><path d="M0 12 H520"></path><path d="M0 25 H520" style="stroke-width: 1.6"></path><path d="M0 38 H520" style="stroke-width: 2.1"></path><path d="M0 51 H520" style="stroke-width: 2.6"></path></g>
+<path d="M0 38 H520" stroke="#F2A93B" style="stroke-width: 3"></path>
+<circle cx="22" cy="38" r="9" fill="#F2A93B"></circle>
+<text x="22" y="42" style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; fill: #1A1206; text-anchor: middle">A</text>
+</svg>
+</div>
+<div style="font-size: 12.5px; color: #8F99A3; display: flex; align-items: center; gap: 6px">Play with keys
+<kbd style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border-radius: 6px; border: 1px solid #2E3640; background: #151A20; color: #C9D1D9">Z</kbd>
+<kbd style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border-radius: 6px; border: 1px solid #2E3640; background: #151A20; color: #C9D1D9">X</kbd>
+<kbd style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border-radius: 6px; border: 1px solid #2E3640; background: #151A20; color: #C9D1D9">C</kbd>
+<span>…</span>
+</div>
+</section>
+
+<footer style="flex: 1 1 100%; font-size: 12px; color: #6F7A86; line-height: 1.5">Unofficial educational project, not affiliated with Dunlop or MXR. The sound engine is a model, not the pedal’s firmware. In this mockup the pedal is interactive; the charts are static samples computed for the Lizard Synth preset.</footer>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(...args) {
+    super(...args);
+    this.state = { detailed: true };
+  }
+
+  compute() {
+    if (this._c) return this._c;
+    const f0 = 55, fc = 520, k = 3, N = 218;
+    const H = (f) => {
+      const a = 1, b = f / fc;
+      const r2 = a * a - b * b, i2 = 2 * a * b;
+      const r4 = r2 * r2 - i2 * i2 + k, i4 = 2 * r2 * i2;
+      const m2 = r4 * r4 + i4 * i4;
+      const re = ((1 + k) * r4) / m2, im = (-(1 + k) * i4) / m2;
+      return { mag: Math.hypot(re, im), ph: Math.atan2(im, re) };
+    };
+    const hs = [];
+    for (let n = 1; n <= N; n++) hs.push(H(n * f0));
+    const f1 = (v) => (Math.round(v * 10) / 10).toString();
+
+    const W = 800, mid = 110, amp = 92, cycles = 2.5, pts = 240;
+    const vals = [];
+    let peak = 0;
+    for (let i = 0; i <= pts; i++) {
+      const t = (cycles / f0) * (i / pts);
+      let v = 0;
+      for (let n = 1; n <= N; n++) v -= (hs[n - 1].mag / n) * Math.sin(2 * Math.PI * n * f0 * t + hs[n - 1].ph);
+      vals.push(v);
+      peak = Math.max(peak, Math.abs(v));
+    }
+    const norm = Math.max(peak, 1.75);
+    const scopeFil = 'M' + vals.map((v, i) => f1((W * i) / pts) + ' ' + f1(mid - (amp * v) / norm)).join(' L');
+    const sa = ((Math.PI / 2) / norm) * amp, cyc = W / cycles;
+    const lo = f1(mid + sa), hi = f1(mid - sa);
+    const scopeRaw = 'M0 ' + lo + ' L' + cyc + ' ' + hi + ' V' + lo + ' L' + 2 * cyc + ' ' + hi + ' V' + lo + ' L' + W + ' ' + mid;
+
+    const L0 = Math.log10(20), L1 = Math.log10(12000);
+    const lx = (f) => (W * (Math.log10(f) - L0)) / (L1 - L0);
+    const ly = (db) => 10 + (18 - db) * (220 / 84);
+    const clip = (db) => Math.max(db, -66);
+    let specRaw = '', specFil = '';
+    for (let n = 1; n <= N; n++) {
+      const x = f1(lx(n * f0));
+      const dr = -20 * Math.log10(n), df = dr + 20 * Math.log10(hs[n - 1].mag);
+      specRaw += 'M' + x + ' 230V' + f1(ly(clip(dr))) + ' ';
+      specFil += 'M' + x + ' 230V' + f1(ly(clip(df))) + ' ';
+    }
+    const curve = [];
+    for (let i = 0; i <= 200; i++) {
+      const f = 20 * Math.pow(12000 / 20, i / 200);
+      curve.push(f1(lx(f)) + ' ' + f1(ly(clip(20 * Math.log10(H(f).mag)))));
+    }
+    const specCurve = 'M' + curve.join(' L');
+    const specArea = specCurve + ' L800 230 L0 230 Z';
+    const fcx = f1(lx(fc));
+
+    const harm = [1, 2, 3, 4, 6, 8].map((n) => {
+      const df = -20 * Math.log10(n) + 20 * Math.log10(hs[n - 1].mag);
+      return { x: f1(lx(n * f0)), y: f1(ly(df) - 8) };
+    });
+    const gridY = [12, 0, -12, -24, -36, -48, -60].map((d) => 'M0 ' + f1(ly(d)) + ' H800').join(' ');
+    const gridX = [50, 100, 200, 500, 1000, 2000, 5000, 10000].map((f) => 'M' + f1(lx(f)) + ' 10 V230').join(' ');
+
+    const base = 211, top = 844, att = 12, dec = 180;
+    const cy = (hz) => 140 - (130 * Math.log(hz / 100)) / Math.log(20);
+    const ep = [];
+    for (let i = 0; i <= 160; i++) {
+      const ms = i < 8 ? (att * i) / 8 : att + ((800 - att) * (i - 8)) / 152;
+      const e = ms < att ? ms / att : Math.exp(-(ms - att) / dec);
+      ep.push(f1(ms) + ' ' + f1(cy(base * Math.pow(top / base, e))));
+    }
+    const envCut = 'M' + ep.join(' L');
+    const ap = [];
+    for (let i = 0; i <= 100; i++) {
+      const ms = i < 4 ? i : 4 + ((800 - 4) * (i - 4)) / 96;
+      let v;
+      if (ms < 3) v = ms / 3;
+      else if (ms < 520) v = Math.exp(-(ms - 3) / 900);
+      else v = Math.exp(-517 / 900) * Math.exp(-(ms - 520) / 40);
+      ap.push(f1(ms) + ' ' + f1(56 - 48 * v));
+    }
+    const envAmp = 'M' + ap.join(' L');
+    const playMs = att + dec * -Math.log(Math.log(520 / base) / Math.log(top / base));
+
+    this._c = {
+      scopeRaw, scopeFil, specRaw, specFil, specCurve, specArea, fcx, fcxLabel: f1(lx(fc) + 8), gridY, gridX,
+      h0: harm[0], h1: harm[1], h2: harm[2], h3: harm[3], h4: harm[4], h5: harm[5],
+      envCut, envCutArea: envCut + ' L800 140 L0 140 Z', envAmp, envAmpArea: envAmp + ' L800 56 L0 56 Z',
+      playX: f1(playMs), playY: f1(cy(520))
+    };
+    return this._c;
+  }
+
+  renderVals() {
+    const c = this.compute();
+    const d = this.state.detailed;
+    const stage = { input: '#8C99A8', osc: '#F2A93B', filter: '#43C6CF', env: '#A68BF5', mod: '#EE7BB8', out: '#A6D96A' };
+    const items = [
+      ['Your bass', stage.input], ['Pitch tracking', stage.input], ['Oscillators', stage.osc], ['Filter', stage.filter, true],
+      ['Amp', stage.env], ['Chorus · LFO', stage.mod], ['Comp · Gate', stage.out], ['Mix', stage.out], ['Out', stage.out]
+    ];
+    const chain = items.map((it, i) => ({
+      label: it[2] ? it[0] + ' · CUTOFF lives here' : it[0],
+      color: it[1],
+      border: it[2] ? '#2F7F86' : '#232A33',
+      bg: it[2] ? 'rgba(67, 198, 207, 0.12)' : 'transparent',
+      fg: it[2] ? '#E8EAED' : '#A3ADB7',
+      arrow: i < items.length - 1
+    }));
+    return Object.assign({}, c, {
+      chain,
+      detailOp: d ? 1 : 0,
+      simpleOp: d ? 0 : 1,
+      simplePressed: d ? 'false' : 'true',
+      detailPressed: d ? 'true' : 'false',
+      simpleBg: d ? 'transparent' : 'rgba(67, 198, 207, 0.16)',
+      simpleFg: d ? '#A3ADB7' : '#BDEFF2',
+      detailBg: d ? 'rgba(67, 198, 207, 0.16)' : 'transparent',
+      detailFg: d ? '#BDEFF2' : '#A3ADB7',
+      setSimple: () => this.setState({ detailed: false }),
+      setDetail: () => this.setState({ detailed: true })
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -46,7 +46,7 @@ it"** (highlights the matching visual) · optional **"Tell me more"**.
 | MOD BLEND | What MOD moves. | Chorus shimmer | Filter wobble |
 | COMP | Evens out loud and soft notes. | Natural dynamics | Squashed, even, punchy |
 | OUTPUT GAIN | Overall volume, ±18 dB. | Quieter | Louder |
-| GATE SENS. | How easily soft notes trigger the synth (live input only). | Ignores soft playing | Catches every ghost note |
+| GATE SENS. | How easily soft notes trigger the synth. | Ignores soft playing | Catches every ghost note |
 | TRACKING | Tells the pedal what instrument range to listen for. | 5-string | 4-string · Guitar |
 | DRY THRU FX | Sends your clean bass through the filter and effects too. | Off | On |
 | OUTPUT MODE | How the sound leaves the pedal. | Mono | Wet/Dry · Stereo |

@@ -5,15 +5,17 @@ on screen and uses it to explain **how synthesizers make sound**, for people
 who aren't synth experts. Turn a knob and hear the change, watch the waveform and
 spectrum react, and follow the signal through the pedal.
 
-> **Status:** planning. Nothing is implemented yet. Start with the plan.
+> **Status:** planning. Nothing is implemented yet. Start with the plan, then look at the
+> [mockup](https://claude.ai/artifact/VLFJfYPHoXTgFQucm1bFJD) (private artifact; source snapshot in [`docs/mockup/`](docs/mockup/)).
 
 ## Documents
 
 | Doc | What's in it |
 |---|---|
-| [`docs/PLAN.md`](docs/PLAN.md) | Vision, UX, visual design, architecture, testing strategy, phased roadmap, open questions |
+| [`docs/PLAN.md`](docs/PLAN.md) | Vision, UX, visual design, architecture, testing strategy, phased roadmap, decisions |
 | [`docs/pedal-reference.md`](docs/pedal-reference.md) | The pedal's controls, secondary parameters, presets and signal flow (from the official manual) and how we model them |
 | [`docs/learning-content.md`](docs/learning-content.md) | Plain-language copy: control cards, Learn chapters, glossary, built-in riffs |
+| [`docs/mockup/`](docs/mockup/) | Source snapshot of the look-and-feel mockup |
 
 ## Planned stack
 

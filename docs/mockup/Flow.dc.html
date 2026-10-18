@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Under the hood · Bass Synth Explorer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0D1014}
+a{color:#7FD8DF}a:hover{color:#B5ECF0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0D1014; color: #E8EAED; font-family: 'Instrument Sans', system-ui, sans-serif">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 14px 28px; border-bottom: 1px solid #1B2229">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 36px; height: 36px; border-radius: 10px; background: #151A20; border: 1px solid #262E37; display: flex; align-items: center; justify-content: center">
+<svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 24 L13 9 V24 L22 9 V24" stroke="#F2A93B" style="stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round"></path><path d="M3 15 C 14 15, 20 15, 23 10 C 25 7, 26 20, 29 27" stroke="#43C6CF" style="stroke-width: 2.2; stroke-linecap: round"></path></svg>
+</div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 16px; font-weight: 650; letter-spacing: -0.01em">Bass Synth Explorer</span>
+<span style="font-size: 12px; color: #8F99A3">for the MXR MB301 · unofficial</span>
+</div>
+</div>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 4px">
+<a href="Main.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #A3ADB7; font-size: 14px; font-weight: 500; text-decoration: none">Play</a>
+<a href="Flow.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #1A2129; color: #E8EAED; font-size: 14px; font-weight: 600; text-decoration: none">Under the hood</a>
+<a href="Learn.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #A3ADB7; font-size: 14px; font-weight: 500; text-decoration: none">Learn</a>
+<a href="#presets" style="padding: 8px 12px; border-radius: 8px; color: #A3ADB7; font-size: 14px; font-weight: 500; text-decoration: none">Presets</a>
+<a href="#reference" style="padding: 8px 12px; border-radius: 8px; color: #A3ADB7; font-size: 14px; font-weight: 500; text-decoration: none">Reference</a>
+</nav>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 10px">
+<span style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid #23452A; background: rgba(95, 211, 90, 0.08); font-size: 13px; color: #BFEFBD"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5FD35A"></span>G3 · Lizard Synth</span>
+<button type="button" aria-pressed="true" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid #2C5A5E; background: rgba(67, 198, 207, 0.12); color: #CFF3F5; font-family: inherit; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer"><span style="width: 8px; height: 8px; border-radius: 50%; background: #43C6CF; box-shadow: 0 0 8px #43C6CF"></span>Sound on</button>
+</div>
+</header>
+
+<main style="max-width: 1440px; margin: 0 auto; padding: 28px 28px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; gap: 8px; max-width: 760px">
+<span style="font-size: 12px; letter-spacing: 0.1em; color: #8F99A3">UNDER THE HOOD</span>
+<h1 style="margin: 0; font-size: 34px; line-height: 1.15; font-weight: 650; letter-spacing: -0.02em">Follow the signal</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.55; color: #B7C0C9">Your bass goes in at the top and the finished sound comes out at the bottom. Each block is one step inside the pedal, and the small screen on the right of each block shows the wave at that point. Select a block to look closer.</p>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start">
+
+<div style="flex: 1 1 640px; min-width: 0; max-width: 860px; display: flex; flex-direction: column">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+<div style="display: flex; gap: 12px; align-items: stretch">
+<div style="flex: 0 0 44px; position: relative">
+<div style="position: absolute; left: 21px; width: 2px; top: {{r.laneTop}}; bottom: {{r.laneBottom}}; background: #4A5562; opacity: {{r.laneOn}}"></div>
+<div style="position: absolute; left: 21px; right: -12px; top: 50%; height: 2px; background: #4A5562; opacity: {{r.stubOn}}"></div>
+</div>
+<button type="button" aria-pressed="{{r.selected}}" onClick="{{r.pick}}" style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; border: 1px solid {{r.border}}; background: {{r.bg}}; color: inherit; font-family: inherit; text-align: left; cursor: pointer; opacity: {{r.op}}; box-shadow: {{r.shadow}}">
+<span style="flex: 0 0 auto; width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: #0D1014; background: {{r.color}}">{{r.letter}}</span>
+<span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<span style="font-size: 15.5px; font-weight: 600">{{r.title}}</span>
+<sc-if value="{{r.tag}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11.5px; padding: 2px 8px; border-radius: 999px; border: 1px solid #343D48; color: #A3ADB7">{{r.tag}}</span></sc-if>
+</span>
+<span style="font-size: 13.5px; color: #B7C0C9">{{r.desc}}</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8F99A3">{{r.knobs}}</span>
+</span>
+<svg viewBox="0 0 200 64" style="flex: 0 0 auto; width: 150px; height: 48px; border-radius: 8px; background: #0B0E12" aria-hidden="true">
+<path d="M0 32 H200" stroke="#1E252D" style="stroke-width: 1"></path>
+<path d="{{r.wave}}" fill="none" stroke="{{r.color}}" style="stroke-width: 1.8; stroke-linejoin: round"></path>
+</svg>
+</button>
+<div style="flex: 0 0 210px; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 6px 0">
+<sc-for list="{{r.mods}}" as="m" hint-placeholder-count="0">
+<div style="display: flex; align-items: center; gap: 8px">
+<svg width="22" height="14" viewBox="0 0 22 14" aria-hidden="true"><path d="M21 7 H4 M8 2 L3 7 L8 12" fill="none" stroke="{{m.color}}" style="stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"></path></svg>
+<div style="flex: 1; min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px dashed {{m.border}}; background: #0F1318">
+<div style="display: flex; align-items: center; gap: 6px"><span style="width: 7px; height: 7px; border-radius: 50%; background: {{m.color}}"></span><span style="font-size: 13px; font-weight: 600">{{m.title}}</span></div>
+<div style="font-size: 12px; color: #A3ADB7; margin-top: 2px">{{m.desc}}</div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8F99A3; margin-top: 2px">{{m.knobs}}</div>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+<sc-if value="{{r.connector}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 12px; height: 22px">
+<div style="flex: 0 0 44px; position: relative"><div style="position: absolute; left: 21px; width: 2px; top: 0; bottom: 0; background: #4A5562; opacity: {{r.laneBelow}}"></div></div>
+<div style="flex: 1 1 auto; display: flex; justify-content: center; align-items: center">
+<svg width="14" height="22" viewBox="0 0 14 22" aria-hidden="true"><path d="M7 0 V18 M2 13 L7 19 L12 13" fill="none" stroke="#4A5562" style="stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"></path></svg>
+</div>
+<div style="flex: 0 0 210px"></div>
+</div>
+</sc-if>
+</sc-for>
+<div style="display: flex; gap: 12px; margin-top: 10px">
+<div style="flex: 0 0 44px"></div>
+<div style="font-size: 12.5px; color: #8F99A3; display: flex; align-items: center; gap: 8px"><span style="width: 18px; height: 2px; background: #4A5562"></span>Grey line on the left: the clean copy of your bass, kept for the MIX knob</div>
+</div>
+</div>
+
+<section aria-labelledby="inspTitle" aria-live="polite" style="flex: 1 1 400px; min-width: 0; background: #11161C; border: 1px solid #1E252D; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; color: #0D1014; background: {{sel.color}}">{{sel.letter}}</span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; letter-spacing: 0.08em; color: #8F99A3">{{sel.kicker}}</span>
+<h2 id="inspTitle" style="margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -0.01em">{{sel.title}}</h2>
+</div>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9D1D9">{{sel.text}}</p>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; letter-spacing: 0.06em; color: #8F99A3">GOING IN</span>
+<svg viewBox="0 0 800 150" style="width: 100%; height: auto; display: block; border-radius: 10px; background: #0B0E12" role="img" aria-label="{{sel.inLabel}}">
+<path d="M0 75 H800" stroke="#1E252D" style="stroke-width: 1.2"></path>
+<path d="{{sel.inWave}}" fill="none" stroke="#7D8893" style="stroke-width: 2; stroke-linejoin: round"></path>
+</svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; letter-spacing: 0.06em; color: #8F99A3">COMING OUT</span>
+<svg viewBox="0 0 800 150" style="width: 100%; height: auto; display: block; border-radius: 10px; background: #0B0E12" role="img" aria-label="{{sel.outLabel}}">
+<path d="M0 75 H800" stroke="#1E252D" style="stroke-width: 1.2"></path>
+<path d="{{sel.outWave}}" fill="none" stroke="{{sel.color}}" style="stroke-width: 2.4; stroke-linejoin: round"></path>
+</svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 12px; background: #0D1115; border: 1px solid #1E252D">
+<span style="font-size: 12px; letter-spacing: 0.06em; color: #8F99A3">CONTROLS IN THIS STEP</span>
+<sc-for list="{{sel.controls}}" as="c" hint-placeholder-count="2">
+<div style="display: flex; justify-content: space-between; gap: 12px; font-size: 14px"><span style="font-weight: 600">{{c.name}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #C9D1D9; text-align: right">{{c.value}}</span></div>
+</sc-for>
+</div>
+<div style="display: flex; gap: 10px; align-items: flex-start; padding: 14px; border-radius: 12px; border: 1px solid #2B3540">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F2A93B" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; margin-top: 2px" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13.5px; font-weight: 600">Try it</span><span style="font-size: 14px; line-height: 1.5; color: #B7C0C9">{{sel.tip}}</span></div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1260}}'>
+class Component extends DCLogic {
+  constructor(...args) {
+    super(...args);
+    this.state = { sel: 3 };
+    this._w = {};
+  }
+
+  H(f) {
+    const fc = 520, k = 3, b = f / fc;
+    const r2 = 1 - b * b, i2 = 2 * b;
+    const r4 = r2 * r2 - i2 * i2 + k, i4 = 2 * r2 * i2;
+    const m2 = r4 * r4 + i4 * i4;
+    const re = ((1 + k) * r4) / m2, im = (-(1 + k) * i4) / m2;
+    return { mag: Math.hypot(re, im), ph: Math.atan2(im, re) };
+  }
+
+  sig() {
+    if (this._s) return this._s;
+    const f0 = 55, TAU = Math.PI * 2;
+    const hs = [];
+    for (let n = 1; n <= 60; n++) hs.push(this.H(n * f0));
+    const saw = (t, nmax) => { let v = 0; for (let n = 1; n <= (nmax || 60); n++) v -= Math.sin(TAU * n * f0 * t) / n; return v; };
+    const fil = (t, nmax) => { let v = 0; for (let n = 1; n <= (nmax || 60); n++) v -= (hs[n - 1].mag / n) * Math.sin(TAU * n * f0 * t + hs[n - 1].ph); return v; };
+    const dry = (t) => { let v = 0; for (let n = 1; n <= 24; n++) v += Math.sin(TAU * n * f0 * t + ((n * 2.39996) % TAU)) / Math.pow(n, 1.6); return v; };
+    const sub = (t) => { let v = 0; for (let m = 1; m <= 39; m += 2) v += (4 / Math.PI / m) * Math.sin(TAU * m * (f0 / 2) * t); return v; };
+    const sine = (t) => Math.sin(TAU * f0 * t);
+    const env = (t, t0, a) => { const x = (t - t0) * 1000; if (x < 0) return 0; return a * (x < 3 ? x / 3 : Math.exp(-(x - 3) / 160)); };
+    const notes = (t, amps, starts) => { let v = 0; for (let i = 0; i < amps.length; i++) v += env(t, starts[i], amps[i]); return v; };
+    let seed = 7;
+    const noiseTab = [];
+    for (let i = 0; i < 2000; i++) { seed = (seed * 16807) % 2147483647; noiseTab.push((seed / 2147483647) * 2 - 1); }
+    const noise = (t) => noiseTab[Math.floor(t * 3000) % 2000];
+    this._s = {
+      dry, saw: (t) => saw(t), fil: (t) => fil(t), sine,
+      osc: (t) => saw(t) + 0.45 * sub(t),
+      flat: (t) => fil(t, 6),
+      note: (t) => env(t, 0, 1) * fil(t, 6),
+      chorus: (t) => 0.6 * fil(t) + 0.6 * fil(t + 0.0013),
+      dynIn: (t) => notes(t, [1, 0.3, 0.7], [0.01, 0.2, 0.4]) * fil(t, 6),
+      dynOut: (t) => notes(t, [1, 0.72, 0.9], [0.01, 0.2, 0.4]) * fil(t, 6),
+      gateIn: (t) => notes(t, [1, 0.9], [0.01, 0.32]) * fil(t, 6) + 0.07 * noise(t),
+      gateOut: (t) => { const g = notes(t, [1, 0.9], [0.01, 0.32]); return g * fil(t, 6) + (g > 0.06 ? 0.07 * noise(t) : 0); },
+      mix: (t) => 0.75 * fil(t) + 0.35 * dry(t)
+    };
+    return this._s;
+  }
+
+  path(kind, W, H, long) {
+    const key = kind + W + 'x' + H + (long ? 'L' : 'S');
+    if (this._w[key]) return this._w[key];
+    const fn = this.sig()[kind];
+    const dur = long ? 0.6 : 2 / 55;
+    const pts = long ? 700 : 140;
+    const vals = [];
+    let peak = 0;
+    for (let i = 0; i <= pts; i++) { const v = fn((dur * i) / pts); vals.push(v); peak = Math.max(peak, Math.abs(v)); }
+    const mid = H / 2, A = mid * 0.82;
+    const f1 = (v) => (Math.round(v * 10) / 10).toString();
+    const d = 'M' + vals.map((v, i) => f1((W * i) / pts) + ' ' + f1(mid - (A * v) / (peak || 1))).join(' L');
+    this._w[key] = d;
+    return d;
+  }
+
+  stages() {
+    const C = { input: '#8C99A8', osc: '#F2A93B', filter: '#43C6CF', env: '#A68BF5', mod: '#EE7BB8', out: '#A6D96A' };
+    return [
+      { letter: 'IN', title: 'Your bass', kicker: 'START', color: C.input, desc: 'The clean signal from your strings', knobs: 'IN jack', wave: 'dry', inW: 'dry', outW: 'dry', inLabel: 'A real bass wave', outLabel: 'The same wave, passed on',
+        text: 'This is your bass, straight from the strings. The wave looks irregular because a real string vibrates in many ways at once. The pedal keeps a clean copy of it for the MIX knob at the end.',
+        controls: [{ name: 'Note', value: 'A1 · open A string' }], tip: 'Tap the footswitch on the Play page to hear only this clean signal (bypass).' },
+      { letter: 'a', title: 'Pitch tracking', kicker: 'STEP A', color: C.input, desc: 'Works out which note you play', knobs: 'TRACKING 5S · GATE SENS. noon', wave: 'sine', inW: 'dry', outW: 'sine', inLabel: 'The bass wave', outLabel: 'The single pitch the pedal found: 55 Hz',
+        text: 'Before it can play a synth note, the pedal measures how fast your string vibrates. A1 repeats 55 times a second, so one cycle takes 18 ms. Low notes take longer to measure, which is why TRACKING asks what instrument you play. It follows one note at a time, so play single notes rather than chords.',
+        controls: [{ name: 'TRACKING', value: '5-string bass' }, { name: 'GATE SENS.', value: '50% sensitivity' }, { name: 'Found', value: 'A1 · 55.0 Hz' }], tip: 'Play a chord on the fretboard: the tracker can only follow one of the notes.' },
+      { letter: 'b', title: 'Oscillators', kicker: 'STEP B', color: C.osc, desc: 'Builds a brand-new wave at that pitch', knobs: 'SHAPE ◿ · VOICE off · SUB MIX 9 · NOISE min', wave: 'osc', inW: 'sine', outW: 'osc', inLabel: 'The pitch from the tracker', outLabel: 'A sawtooth plus a quieter wave one octave lower',
+        mods: [{ title: 'Glide', desc: 'slides between notes', knobs: 'GLIDE off', color: C.osc }],
+        text: 'Now the synth takes over. It builds a sawtooth wave at exactly the note you played, plus a quieter wave one octave lower (SUB MIX). The sawtooth sounds bright and buzzy because it contains every harmonic.',
+        controls: [{ name: 'SHAPE', value: '◿ sawtooth' }, { name: 'SUB MIX', value: '9 o’clock · 20% sub' }, { name: 'VOICE', value: 'off' }, { name: 'NOISE MIX', value: 'min' }], tip: 'Press SHAPE to switch between triangle, sawtooth and square and watch this wave change.' },
+      { letter: 'c', title: 'Filter', kicker: 'STEP C', color: C.filter, desc: 'Removes the bright upper harmonics', knobs: 'CUTOFF 10 · RESONANCE 3', wave: 'fil', inW: 'saw', outW: 'fil', inLabel: 'Sawtooth from the oscillators', outLabel: 'Rounded, ringing wave after the resonant filter',
+        mods: [{ title: 'Filter envelope', desc: 'opens it on every note', knobs: 'ENVELOPE 11 · ENV AMT 2', color: C.env }, { title: 'LFO', desc: 'wobbles it up and down', knobs: 'MOD min · BLEND 9', color: C.mod }],
+        text: 'The filter is where most of the character comes from. It lets the low harmonics through and turns down everything above the cutoff, so the sharp edge of the sawtooth gets rounded off. RESONANCE boosts the harmonics right at the cutoff. That is the ringing you can see in the wave and the “quack” you hear.',
+        controls: [{ name: 'CUTOFF', value: '10 o’clock · 211 Hz' }, { name: 'RESONANCE', value: '3 o’clock · strong peak' }, { name: 'Cutoff right now', value: '520 Hz (envelope)' }], tip: 'Turn CUTOFF down: the wave gets smoother and the sound darker. Turn RESONANCE up: the ringing grows.' },
+      { letter: 'd', title: 'Amp', kicker: 'STEP D', color: C.env, desc: 'Shapes the volume of each note', knobs: 'AMP ENV min · follows your playing', wave: 'note', long: true, inW: 'flat', outW: 'note', inLabel: 'Steady filtered wave over 0.6 seconds', outLabel: 'The same wave fading out like a plucked note',
+        mods: [{ title: 'Amp envelope', desc: 'fade-in at each note', knobs: 'AMP ENV min', color: C.env }],
+        text: 'The amp decides how loud the synth is from moment to moment. It follows your bass: when your note fades, the synth fades with it. AMP ENV adds a fade-in at the start of each note, which turns plucks into swells.',
+        controls: [{ name: 'AMP ENV', value: 'min · instant start' }, { name: 'Follows', value: 'your note’s level' }], tip: 'Hold VOICE and turn ENVELOPE (that is AMP ENV) to make each note swell in.' },
+      { letter: 'e', title: 'Chorus · LFO', kicker: 'STEP E', color: C.mod, desc: 'Adds shimmer or a slow wobble', knobs: 'MOD min · MOD BLEND 9', tag: 'off: MOD is at minimum', off: true, wave: 'chorus', inW: 'fil', outW: 'chorus', inLabel: 'Filtered wave', outLabel: 'Wave mixed with a slightly delayed copy',
+        text: 'Chorus layers a slightly delayed, wobbling copy on top of the sound to make it wider. The LFO slowly moves the cutoff up and down. MOD sets how much, MOD BLEND chooses between the two. In this preset MOD is at minimum, so the sound passes through unchanged.',
+        controls: [{ name: 'MOD', value: 'min · off' }, { name: 'MOD BLEND', value: '80% chorus, 20% LFO' }], tip: 'Turn MOD up to 12 o’clock and this block lights up.' },
+      { letter: 'f', title: 'Compressor', kicker: 'STEP F', color: C.out, desc: 'Evens out loud and soft notes', knobs: 'COMP 9', wave: 'dynOut', long: true, inW: 'dynIn', outW: 'dynOut', inLabel: 'Three notes at very different levels', outLabel: 'The same notes at more even levels',
+        text: 'Compression turns loud notes down and leaves quiet ones alone, so every note comes out at a similar level. Turned all the way up it becomes a limiter: nothing gets past a set level.',
+        controls: [{ name: 'COMP', value: '9 o’clock · 20%' }], tip: 'Hold SHAPE and turn MIX (that is COMP). Play the Ghost Notes riff to hear the soft notes come up.' },
+      { letter: 'g', title: 'Gate', kicker: 'STEP G', color: C.out, desc: 'Keeps it quiet between notes', knobs: 'GATE SENS. noon', wave: 'gateOut', long: true, inW: 'gateIn', outW: 'gateOut', inLabel: 'Two notes with hum in the gap', outLabel: 'Two notes with silence in the gap',
+        text: 'When you stop playing, the gate closes so the synth does not hum or chatter. GATE SENS. sets how quiet a note can be and still open it.',
+        controls: [{ name: 'GATE SENS.', value: 'noon · 50%' }], tip: 'Higher sensitivity catches every ghost note. Lower ignores light touches.' },
+      { letter: 'M', title: 'Mix', kicker: 'BLEND', color: C.out, desc: 'Blends your clean bass back in', knobs: 'MIX 4 · DRY THRU FX off', wave: 'mix', inW: 'fil', outW: 'mix', inLabel: 'Synth only', outLabel: 'Synth plus a little of the clean bass',
+        text: 'MIX blends the synth with the clean copy of your bass from the top of the chain. At 4 o’clock it is mostly synth with a little of your real attack, which helps the note feel connected to your fingers.',
+        controls: [{ name: 'MIX', value: '4 o’clock · 90% synth' }, { name: 'DRY THRU FX', value: 'OFF' }], tip: 'Set MIX to noon for an even blend, the classic way to keep a synth bass punchy.' },
+      { letter: 'OUT', title: 'Output', kicker: 'END', color: C.out, desc: 'Final level and routing', knobs: 'OUTPUT GAIN 0 dB · OUTPUT MODE mono', wave: 'mix', inW: 'mix', outW: 'mix', inLabel: 'Blended signal', outLabel: 'The finished sound',
+        text: 'OUTPUT GAIN sets the final volume, plus or minus 18 dB. OUTPUT MODE decides whether you get one mono signal, synth left and clean bass right, or a full stereo spread.',
+        controls: [{ name: 'OUTPUT GAIN', value: 'noon · 0 dB' }, { name: 'OUTPUT MODE', value: 'MONO' }], tip: 'Put on headphones and try STEREO mode: the voices spread out left and right.' }
+    ];
+  }
+
+  renderVals() {
+    const S = this.stages();
+    const sel = this.state.sel;
+    const last = S.length - 1;
+    const rows = S.map((s, i) => {
+      const isSel = i === sel;
+      return {
+        letter: s.letter, title: s.title, desc: s.desc, knobs: s.knobs, color: s.color, tag: s.tag || '',
+        wave: this.path(s.wave, 200, 64, s.long),
+        mods: s.mods || [],
+        selected: isSel ? 'true' : 'false',
+        border: isSel ? s.color : '#222A33',
+        bg: isSel ? '#161D25' : '#11161C',
+        shadow: isSel ? '0 0 0 3px rgba(67, 198, 207, 0.14)' : 'none',
+        op: s.off && !isSel ? 0.55 : 1,
+        laneOn: i <= 8 ? 1 : 0,
+        laneTop: i === 0 ? '50%' : '0',
+        laneBottom: i === 8 ? '50%' : '0',
+        stubOn: i === 0 || i === 8 ? 1 : 0,
+        laneBelow: i < 8 ? 1 : 0,
+        connector: i < last,
+        pick: () => this.setState({ sel: i })
+      };
+    });
+    const s = S[sel];
+    return {
+      rows,
+      sel: {
+        letter: s.letter, title: s.title, kicker: s.kicker, color: s.color, text: s.text, tip: s.tip, controls: s.controls,
+        inWave: this.path(s.inW, 800, 150, s.long), outWave: this.path(s.outW, 800, 150, s.long),
+        inLabel: s.inLabel, outLabel: s.outLabel
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

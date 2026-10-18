@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Design language · Bass Synth Explorer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#0D1014}</style>
+</helmet>
+<div style="width: 1200px; height: 1180px; box-sizing: border-box; padding: 48px 56px; background: #0D1014; color: #E8EAED; font-family: 'Instrument Sans', system-ui, sans-serif; display: flex; flex-direction: column; gap: 36px">
+
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; letter-spacing: 0.12em; color: #8F99A3">BASS SYNTH EXPLORER</span>
+<h1 style="margin: 0; font-size: 40px; font-weight: 650; letter-spacing: -0.02em">Design language</h1>
+<p style="margin: 0; font-size: 16px; color: #B7C0C9">Studio at night: a dark, quiet room where the pedal and the sound are the brightest things.</p>
+</div>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6F7A86">dark only · English · v0 mockup</span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px">
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 13px; letter-spacing: 0.1em; color: #8F99A3; font-weight: 600">INTERFACE</h2>
+<sc-for list="{{ui}}" as="c" hint-placeholder-count="6">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="width: 44px; height: 32px; border-radius: 8px; border: 1px solid #2A313A; background: {{c.hex}}"></span>
+<span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">{{c.name}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8F99A3">{{c.hex}} · {{c.use}}</span></span>
+</div>
+</sc-for>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 13px; letter-spacing: 0.1em; color: #8F99A3; font-weight: 600">PEDAL (FROM THE PRODUCT PHOTO)</h2>
+<sc-for list="{{pedal}}" as="c" hint-placeholder-count="6">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="width: 44px; height: 32px; border-radius: 8px; border: 1px solid #2A313A; background: {{c.hex}}"></span>
+<span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">{{c.name}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8F99A3">{{c.hex}} · {{c.use}}</span></span>
+</div>
+</sc-for>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 13px; letter-spacing: 0.1em; color: #8F99A3; font-weight: 600">STAGE COLORS (THE TEACHING CODE)</h2>
+<sc-for list="{{stage}}" as="c" hint-placeholder-count="6">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="width: 44px; height: 32px; border-radius: 8px; background: {{c.hex}}"></span>
+<span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">{{c.name}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8F99A3">{{c.hex}} · {{c.use}}</span></span>
+</div>
+</sc-for>
+<p style="margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: #A3ADB7">One color per step of the signal chain, used the same way on knob halos, flow blocks, chart lines and chips. Every color also carries a label.</p>
+</section>
+</div>
+
+<div style="height: 1px; background: #1E252D"></div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px">
+<section style="display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-size: 13px; letter-spacing: 0.1em; color: #8F99A3; font-weight: 600">TYPE</h2>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 36px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1">The filter: carving the sound</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #6F7A86">Instrument Sans 650 · 36–40 · −2% tracking · headings</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 16px; line-height: 1.6; color: #C9D1D9">A low-pass filter lets the low harmonics through and blocks the high ones.</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #6F7A86">Instrument Sans 400 · 15–17 / 1.6 · body copy</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; letter-spacing: 0.1em; color: #8F99A3">CHAPTER 5 · FILTER STAGE</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #6F7A86">Instrument Sans 500 · 12 caps · +10% tracking · kickers</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 600; color: #7FD8DF">211 Hz · 10 o’clock</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #6F7A86">JetBrains Mono 500–600 · live values and readouts</span></div>
+<div style="display: flex; align-items: baseline; gap: 22px">
+<span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 22px; font-weight: 700; font-stretch: 85%; letter-spacing: 0.03em; color: #E6E4DF">CUTOFF · RESONANCE</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #6F7A86">pedal screen print · condensed 700</span></span>
+<span style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Comfortaa', sans-serif; font-size: 34px; font-weight: 300; color: #E6E4DF">bass synth</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #6F7A86">wordmark · Comfortaa 300</span></span>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-size: 13px; letter-spacing: 0.1em; color: #8F99A3; font-weight: 600">KNOB STATES</h2>
+<div style="display: flex; gap: 22px; padding: 18px; border-radius: 16px; background: #3C4046; border: 1px solid #141618">
+<sc-for list="{{knobs}}" as="k" hint-placeholder-count="4">
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px">
+<svg viewBox="-110 -110 220 220" style="width: 104px; height: 104px" aria-hidden="true">
+<path d="M-87.5 50.5 A101 101 0 1 1 87.5 50.5" fill="none" stroke="#FFFFFF" opacity="{{k.track}}" style="stroke-width: 6; stroke-linecap: round"></path>
+<path d="{{k.arc}}" fill="none" stroke="{{k.arcColor}}" opacity="{{k.arcOp}}" style="stroke-width: 6; stroke-linecap: round"></path>
+<g style="transform: rotate({{k.rot}}deg) scale(0.92)"><path d="M0.0 -86.0 L8.4 -85.4 L16.6 -83.6 L24.4 -80.4 L30.8 -74.4 L39.6 -74.1 L47.3 -70.8 L54.4 -66.3 L60.8 -60.8 L66.3 -54.4 L70.8 -47.3 L74.1 -39.6 L74.4 -30.8 L80.4 -24.4 L83.6 -16.6 L85.4 -8.4 L86.0 0.0 L85.4 8.4 L83.6 16.6 L80.4 24.4 L74.4 30.8 L74.1 39.6 L70.8 47.3 L66.3 54.4 L60.8 60.8 L54.4 66.3 L47.3 70.8 L39.6 74.1 L30.8 74.4 L24.4 80.4 L16.6 83.6 L8.4 85.4 L0.0 86.0 L-8.4 85.4 L-16.6 83.6 L-24.4 80.4 L-30.8 74.4 L-39.6 74.1 L-47.3 70.8 L-54.4 66.3 L-60.8 60.8 L-66.3 54.4 L-70.8 47.3 L-74.1 39.6 L-74.4 30.8 L-80.4 24.4 L-83.6 16.6 L-85.4 8.4 L-86.0 0.0 L-85.4 -8.4 L-83.6 -16.6 L-80.4 -24.4 L-74.4 -30.8 L-74.1 -39.6 L-70.8 -47.3 L-66.3 -54.4 L-60.8 -60.8 L-54.4 -66.3 L-47.3 -70.8 L-39.6 -74.1 L-30.8 -74.4 L-24.4 -80.4 L-16.6 -83.6 L-8.4 -85.4 Z" fill="{{k.fill}}"></path></g>
+<circle r="60" fill="{{k.dome}}"></circle>
+<circle r="60" fill="#FFFFFF" opacity="0.08"></circle>
+<g style="transform: rotate({{k.rot}}deg)"><rect x="-4.5" y="-78" width="9" height="48" rx="4.5" fill="#FBFAF6"></rect></g>
+</svg>
+<span style="font-size: 14px; font-weight: 700; font-stretch: 85%; letter-spacing: 0.03em; color: {{k.labelColor}}">{{k.label}}</span>
+<span style="font-size: 12px; color: #D5D8DC; text-align: center">{{k.note}}</span>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap">
+<span style="font-size: 12px; letter-spacing: 0.1em; color: #8F99A3">LEDS</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #A3ADB7"><span style="width: 14px; height: 14px; border-radius: 50%; background: #2A3237; border: 2px solid #15181B"></span>off</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #A3ADB7"><span style="width: 14px; height: 14px; border-radius: 50%; background: #5FD35A; border: 2px solid #15181B; box-shadow: 0 0 10px #5FD35A"></span>preset (green bank)</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #A3ADB7"><span style="width: 14px; height: 14px; border-radius: 50%; background: #E5484D; border: 2px solid #15181B; box-shadow: 0 0 10px #E5484D"></span>preset (red bank)</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #A3ADB7"><span style="width: 14px; height: 14px; border-radius: 50%; background: #5FD35A; opacity: 0.5; border: 2px solid #15181B"></span>edited (soft flash)</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #A3ADB7"><span style="width: 14px; height: 14px; border-radius: 50%; background: #49B9F0; border: 2px solid #15181B; box-shadow: 0 0 10px #49B9F0"></span>synth on</span>
+</div>
+</section>
+</div>
+
+<div style="height: 1px; background: #1E252D"></div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px">
+<section style="display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-size: 13px; letter-spacing: 0.1em; color: #8F99A3; font-weight: 600">CONTROLS</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+<button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 12px; border: 0; background: #43C6CF; color: #071012; font-family: inherit; font-size: 14px; font-weight: 650; cursor: pointer">Next: Resonance</button>
+<button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid #2A313A; background: #151A20; color: #E8EAED; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Chapter 4: Noise</button>
+<button type="button" aria-pressed="true" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid #2C5A5E; background: rgba(67, 198, 207, 0.12); color: #CFF3F5; font-family: inherit; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; cursor: pointer"><span style="width: 8px; height: 8px; border-radius: 50%; background: #43C6CF; box-shadow: 0 0 8px #43C6CF"></span>Sound on</button>
+<button type="button" aria-label="Pause riff" style="width: 48px; height: 48px; border-radius: 50%; border: 0; background: #F2A93B; color: #1A1206; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 3.2; stroke-linecap: round" aria-hidden="true"><path d="M9 5v14M15 5v14"></path></svg></button>
+</div>
+<div role="group" aria-label="Knob layer example" style="display: flex; gap: 4px; padding: 4px; background: #141920; border: 1px solid #232A33; border-radius: 12px; max-width: 440px">
+<button type="button" aria-pressed="false" style="flex: 1; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: #9AA4AE; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer"><span style="font-size: 13.5px; font-weight: 600">Main</span><span style="font-size: 11px; opacity: 0.8">as printed</span></button>
+<button type="button" aria-pressed="true" style="flex: 1; min-height: 44px; border: 0; border-radius: 9px; background: rgba(94, 200, 255, 0.16); color: #8FD3FF; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer"><span style="font-size: 13.5px; font-weight: 600">Voice layer</span><span style="font-size: 11px; opacity: 0.8">hold VOICE</span></button>
+<button type="button" aria-pressed="false" style="flex: 1; min-height: 44px; border: 0; border-radius: 9px; background: transparent; color: #9AA4AE; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer"><span style="font-size: 13.5px; font-weight: 600">Shape layer</span><span style="font-size: 11px; opacity: 0.8">hold SHAPE</span></button>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<span style="display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 999px; font-size: 12.5px; border: 1px solid #2F7F86; background: rgba(67, 198, 207, 0.12); color: #E8EAED"><span style="width: 7px; height: 7px; border-radius: 50%; background: #43C6CF"></span>Filter · CUTOFF lives here</span>
+<span style="display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 999px; font-size: 12.5px; border: 1px solid #232A33; color: #A3ADB7"><span style="width: 7px; height: 7px; border-radius: 50%; background: #F2A93B"></span>Oscillators</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid #3A4450; color: #C9D1D9">edited</span>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-size: 13px; letter-spacing: 0.1em; color: #8F99A3; font-weight: 600">CHART GRAMMAR</h2>
+<div style="padding: 16px 18px; border-radius: 16px; background: #11161C; border: 1px solid #1E252D; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Panel title</span><span style="font-size: 12.5px; color: #8F99A3">One plain sentence saying what you are looking at</span></div>
+<svg viewBox="0 0 500 120" style="width: 100%; height: auto; display: block" aria-hidden="true">
+<g stroke="#1B222A" style="stroke-width: 1"><path d="M0 20 H500 M0 100 H500 M100 0 V120 M200 0 V120 M300 0 V120 M400 0 V120"></path></g>
+<path d="M0 60 H500" stroke="#2A323C"></path>
+<path d="M0 100 L200 20 V100 L400 20 V100 L500 60" fill="none" stroke="#F2A93B" opacity="0.55" style="stroke-width: 1.8; stroke-dasharray: 5 4"></path>
+<path d="M0 88 C 40 80, 90 50, 140 34 C 170 26, 185 30, 200 56 C 212 76, 228 92, 260 90 C 300 86, 340 52, 370 36 C 385 28, 392 34, 400 56 C 410 76, 430 92, 460 88 C 480 84, 492 70, 500 62" fill="none" stroke="#43C6CF" style="stroke-width: 2.6"></path>
+</svg>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12.5px; color: #A3ADB7">
+<span>dashed = before this step</span><span>solid = after, in the stage color</span><span>grid only in Detailed view</span>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #C9D1D9">live readout in mono</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1180}}'>
+class Component extends DCLogic {
+  arc(a1) {
+    const r = 101;
+    const pt = (a) => { const t = (a * Math.PI) / 180; return (r * Math.sin(t)).toFixed(1) + ' ' + (-r * Math.cos(t)).toFixed(1); };
+    return 'M' + pt(-150) + ' A' + r + ' ' + r + ' 0 ' + (a1 + 150 > 180 ? 1 : 0) + ' 1 ' + pt(a1);
+  }
+
+  renderVals() {
+    return {
+      ui: [
+        { name: 'Background', hex: '#0D1014', use: 'page' },
+        { name: 'Surface', hex: '#11161C', use: 'panels' },
+        { name: 'Raised', hex: '#151A20', use: 'buttons, inputs' },
+        { name: 'Line', hex: '#1E252D', use: 'borders, grids' },
+        { name: 'Text', hex: '#E8EAED', use: 'primary text' },
+        { name: 'Muted', hex: '#A3ADB7', use: 'secondary text' }
+      ],
+      pedal: [
+        { name: 'Enclosure', hex: '#3C3F44', use: 'matte charcoal' },
+        { name: 'Orange knobs', hex: '#F26A10', use: 'MIX, SUB MIX' },
+        { name: 'Teal knobs', hex: '#5BB5BE', use: 'CUTOFF, RES, ENV, MOD' },
+        { name: 'Screen print', hex: '#E6E4DF', use: 'labels, logo' },
+        { name: 'Bypass LED', hex: '#49B9F0', use: 'synth on' },
+        { name: 'Shape LEDs', hex: '#F2A51F', use: 'green · amber · red' }
+      ],
+      stage: [
+        { name: 'Oscillators', hex: '#F2A93B', use: 'shape, sub, voice, noise, glide' },
+        { name: 'Filter', hex: '#43C6CF', use: 'cutoff, resonance' },
+        { name: 'Envelopes', hex: '#A68BF5', use: 'filter env, amp env' },
+        { name: 'Modulation', hex: '#EE7BB8', use: 'LFO, chorus' },
+        { name: 'Dynamics, output', hex: '#A6D96A', use: 'comp, gate, mix, gain' },
+        { name: 'Input', hex: '#8C99A8', use: 'your bass, tracking' }
+      ],
+      knobs: [
+        { label: 'CUTOFF', note: 'at rest', rot: -60, fill: '#5BB5BE', dome: '#6FC6CE', track: 0, arc: 'M0 0', arcColor: '#43C6CF', arcOp: 0, labelColor: '#E6E4DF' },
+        { label: 'CUTOFF', note: 'hover or focus: value arc', rot: -60, fill: '#5BB5BE', dome: '#6FC6CE', track: 0.15, arc: this.arc(-60), arcColor: '#43C6CF', arcOp: 1, labelColor: '#E6E4DF' },
+        { label: 'FILTER ENV AMT', note: 'voice layer', rot: 60, fill: '#5BB5BE', dome: '#6FC6CE', track: 0.15, arc: this.arc(60), arcColor: '#A68BF5', arcOp: 1, labelColor: '#8FD3FF' },
+        { label: 'COMP', note: 'shape layer', rot: -90, fill: '#F26A10', dome: '#F77A22', track: 0.15, arc: this.arc(-90), arcColor: '#A6D96A', arcOp: 1, labelColor: '#8BE59A' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

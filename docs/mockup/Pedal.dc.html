@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bass Synth pedal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 100%; box-sizing: border-box; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 16px; font-family: 'Instrument Sans', system-ui, sans-serif; color: #E8EAED; background: radial-gradient(ellipse 70% 55% at 50% 42%, #1A2128 0%, #0D1014 72%)">
+
+<sc-if value="{{showTopBar}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: center; gap: 12px; width: 100%; max-width: 440px">
+<span style="width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; background: {{bankColor}}; box-shadow: 0 0 10px {{bankGlow}}"></span>
+<div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; color: #9AA4AE">{{presetCode}}</span>
+<span style="font-size: 17px; font-weight: 600; letter-spacing: 0.01em">{{presetName}}</span>
+</div>
+<sc-if value="{{edited}}" hint-placeholder-val="{{ false }}">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid #3A4450; color: #C9D1D9">edited</span>
+</sc-if>
+<button type="button" aria-label="Previous preset" onClick="{{prevPreset}}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #2A313A; background: #141920; color: #C9D1D9; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+</button>
+<button type="button" aria-label="Next preset" onClick="{{nextPreset}}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #2A313A; background: #141920; color: #C9D1D9; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+</button>
+</div>
+</sc-if>
+
+<div style="position: relative; width: 100%; max-width: {{maxW}}; aspect-ratio: {{aspect}}">
+<svg viewBox="{{vb}}" style="position: absolute; inset: 0; width: 100%; height: 100%; display: block" role="img" aria-label="{{svgLabel}}">
+<defs>
+<linearGradient id="pbBody" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" style="stop-color: #4A4F56"></stop>
+<stop offset="0.45" style="stop-color: #3C4046"></stop>
+<stop offset="1" style="stop-color: #2C2F34"></stop>
+</linearGradient>
+<radialGradient id="pbSpot" cx="0.3" cy="0.14" r="0.8">
+<stop offset="0" style="stop-color: #FFFFFF; stop-opacity: 0.11"></stop>
+<stop offset="1" style="stop-color: #FFFFFF; stop-opacity: 0"></stop>
+</radialGradient>
+<filter id="pbGrain" x="0" y="0" width="1" height="1">
+<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"></feTurbulence>
+<feColorMatrix in="n" type="saturate" values="0" result="g"></feColorMatrix>
+<feComponentTransfer in="g" result="a"><feFuncA type="table" tableValues="0 0.18"></feFuncA></feComponentTransfer>
+<feComposite in="a" in2="SourceGraphic" operator="in"></feComposite>
+</filter>
+<filter id="pbBlur6" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"></feGaussianBlur></filter>
+<filter id="pbBlur14" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"></feGaussianBlur></filter>
+<filter id="pbGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="9"></feGaussianBlur></filter>
+<radialGradient id="pbOrSkirt" cx="0.5" cy="0.5" r="0.5">
+<stop offset="0" style="stop-color: #FF8C40"></stop>
+<stop offset="0.74" style="stop-color: #F26A10"></stop>
+<stop offset="1" style="stop-color: #B44705"></stop>
+</radialGradient>
+<radialGradient id="pbOrDome" cx="0.4" cy="0.32" r="0.75">
+<stop offset="0" style="stop-color: #FFB27A"></stop>
+<stop offset="0.5" style="stop-color: #F77A22"></stop>
+<stop offset="1" style="stop-color: #D05507"></stop>
+</radialGradient>
+<radialGradient id="pbTeSkirt" cx="0.5" cy="0.5" r="0.5">
+<stop offset="0" style="stop-color: #8ED7DE"></stop>
+<stop offset="0.74" style="stop-color: #5BB5BE"></stop>
+<stop offset="1" style="stop-color: #3A8A93"></stop>
+</radialGradient>
+<radialGradient id="pbTeDome" cx="0.4" cy="0.32" r="0.75">
+<stop offset="0" style="stop-color: #C2F1F4"></stop>
+<stop offset="0.5" style="stop-color: #70C7CF"></stop>
+<stop offset="1" style="stop-color: #47A0A9"></stop>
+</radialGradient>
+<linearGradient id="pbLight" x1="0.15" y1="0.1" x2="0.85" y2="0.9">
+<stop offset="0" style="stop-color: #FFFFFF; stop-opacity: 0.22"></stop>
+<stop offset="0.5" style="stop-color: #FFFFFF; stop-opacity: 0"></stop>
+<stop offset="1" style="stop-color: #000000; stop-opacity: 0.3"></stop>
+</linearGradient>
+<radialGradient id="pbSpec" cx="0.5" cy="0.5" r="0.5">
+<stop offset="0" style="stop-color: #FFFFFF; stop-opacity: 0.7"></stop>
+<stop offset="1" style="stop-color: #FFFFFF; stop-opacity: 0"></stop>
+</radialGradient>
+<radialGradient id="pbCap" cx="0.4" cy="0.35" r="0.7">
+<stop offset="0" style="stop-color: #F4F4F0"></stop>
+<stop offset="0.55" style="stop-color: #C8C9C4"></stop>
+<stop offset="1" style="stop-color: #989A94"></stop>
+</radialGradient>
+<linearGradient id="pbChrome" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" style="stop-color: #F5F6F7"></stop>
+<stop offset="0.3" style="stop-color: #A0A6AC"></stop>
+<stop offset="0.52" style="stop-color: #E8EBEE"></stop>
+<stop offset="0.76" style="stop-color: #6C727A"></stop>
+<stop offset="1" style="stop-color: #CDD1D6"></stop>
+</linearGradient>
+<linearGradient id="pbChromeV" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" style="stop-color: #DDE1E5"></stop>
+<stop offset="0.5" style="stop-color: #8A9096"></stop>
+<stop offset="1" style="stop-color: #C9CDD2"></stop>
+</linearGradient>
+<radialGradient id="pbFsCap" cx="0.42" cy="0.38" r="0.7">
+<stop offset="0" style="stop-color: #E6E9EC"></stop>
+<stop offset="0.6" style="stop-color: #ABB0B6"></stop>
+<stop offset="1" style="stop-color: #7B8188"></stop>
+</radialGradient>
+<radialGradient id="pbLedBlue" cx="0.4" cy="0.35" r="0.65">
+<stop offset="0" style="stop-color: #E6F8FF"></stop>
+<stop offset="0.45" style="stop-color: #49B9F0"></stop>
+<stop offset="1" style="stop-color: #0A5A8B"></stop>
+</radialGradient>
+<radialGradient id="pbLedOff" cx="0.4" cy="0.35" r="0.65">
+<stop offset="0" style="stop-color: #4C555B"></stop>
+<stop offset="1" style="stop-color: #1C2326"></stop>
+</radialGradient>
+<radialGradient id="pbLedG" cx="0.4" cy="0.35" r="0.65">
+<stop offset="0" style="stop-color: #EDFFE8"></stop>
+<stop offset="0.5" style="stop-color: #5FD35A"></stop>
+<stop offset="1" style="stop-color: #2A7F28"></stop>
+</radialGradient>
+<radialGradient id="pbLedA" cx="0.4" cy="0.35" r="0.65">
+<stop offset="0" style="stop-color: #FFF3D6"></stop>
+<stop offset="0.5" style="stop-color: #F2A51F"></stop>
+<stop offset="1" style="stop-color: #9E5E09"></stop>
+</radialGradient>
+<radialGradient id="pbLedR" cx="0.4" cy="0.35" r="0.65">
+<stop offset="0" style="stop-color: #FFDCDE"></stop>
+<stop offset="0.5" style="stop-color: #E5484D"></stop>
+<stop offset="1" style="stop-color: #85181E"></stop>
+</radialGradient>
+<radialGradient id="pbLedFrost" cx="0.4" cy="0.35" r="0.65">
+<stop offset="0" style="stop-color: #DCDFD5"></stop>
+<stop offset="0.6" style="stop-color: #A6AA9E"></stop>
+<stop offset="1" style="stop-color: #6F7369"></stop>
+</radialGradient>
+<path id="pbScallop" d="M0.0 -86.0 L4.2 -85.8 L8.4 -85.4 L12.6 -84.6 L16.6 -83.6 L20.6 -82.2 L24.4 -80.4 L28.0 -78.3 L30.8 -74.4 L35.5 -75.2 L39.6 -74.1 L43.6 -72.7 L47.3 -70.8 L51.0 -68.7 L54.4 -66.3 L57.7 -63.7 L60.8 -60.8 L63.7 -57.7 L66.3 -54.4 L68.7 -51.0 L70.8 -47.3 L72.7 -43.6 L74.1 -39.6 L75.2 -35.5 L74.4 -30.8 L78.3 -28.0 L80.4 -24.4 L82.2 -20.6 L83.6 -16.6 L84.6 -12.6 L85.4 -8.4 L85.8 -4.2 L86.0 -0.0 L85.8 4.2 L85.4 8.4 L84.6 12.6 L83.6 16.6 L82.2 20.6 L80.4 24.4 L78.3 28.0 L74.4 30.8 L75.2 35.5 L74.1 39.6 L72.7 43.6 L70.8 47.3 L68.7 51.0 L66.3 54.4 L63.7 57.7 L60.8 60.8 L57.7 63.7 L54.4 66.3 L51.0 68.7 L47.3 70.8 L43.6 72.7 L39.6 74.1 L35.5 75.2 L30.8 74.4 L28.0 78.3 L24.4 80.4 L20.6 82.2 L16.6 83.6 L12.6 84.6 L8.4 85.4 L4.2 85.8 L0.0 86.0 L-4.2 85.8 L-8.4 85.4 L-12.6 84.6 L-16.6 83.6 L-20.6 82.2 L-24.4 80.4 L-28.0 78.3 L-30.8 74.4 L-35.5 75.2 L-39.6 74.1 L-43.6 72.7 L-47.3 70.8 L-51.0 68.7 L-54.4 66.3 L-57.7 63.7 L-60.8 60.8 L-63.7 57.7 L-66.3 54.4 L-68.7 51.0 L-70.8 47.3 L-72.7 43.6 L-74.1 39.6 L-75.2 35.5 L-74.4 30.8 L-78.3 28.0 L-80.4 24.4 L-82.2 20.6 L-83.6 16.6 L-84.6 12.6 L-85.4 8.4 L-85.8 4.2 L-86.0 0.0 L-85.8 -4.2 L-85.4 -8.4 L-84.6 -12.6 L-83.6 -16.6 L-82.2 -20.6 L-80.4 -24.4 L-78.3 -28.0 L-74.4 -30.8 L-75.2 -35.5 L-74.1 -39.6 L-72.7 -43.6 L-70.8 -47.3 L-68.7 -51.0 L-66.3 -54.4 L-63.7 -57.7 L-60.8 -60.8 L-57.7 -63.7 L-54.4 -66.3 L-51.0 -68.7 L-47.3 -70.8 L-43.6 -72.7 L-39.6 -74.1 L-35.5 -75.2 L-30.8 -74.4 L-28.0 -78.3 L-24.4 -80.4 L-20.6 -82.2 L-16.6 -83.6 L-12.6 -84.6 L-8.4 -85.4 L-4.2 -85.8 Z"></path>
+</defs>
+
+<rect x="24" y="36" width="716" height="{{encH}}" rx="46" fill="#000000" opacity="0.6" filter="url(#pbBlur14)"></rect>
+
+<rect x="-22" y="597" width="40" height="60" rx="7" fill="url(#pbChromeV)"></rect>
+<rect x="-30" y="608" width="12" height="38" rx="3" fill="#596067"></rect>
+<rect x="-22" y="1066" width="40" height="60" rx="7" fill="url(#pbChromeV)"></rect>
+<rect x="-30" y="1077" width="12" height="38" rx="3" fill="#596067"></rect>
+<rect x="718" y="597" width="40" height="60" rx="7" fill="url(#pbChromeV)"></rect>
+<rect x="754" y="608" width="12" height="38" rx="3" fill="#596067"></rect>
+
+<rect x="10" y="10" width="716" height="{{encH}}" rx="46" fill="url(#pbBody)"></rect>
+<rect x="10" y="10" width="716" height="{{encH}}" rx="46" fill="#000000" filter="url(#pbGrain)"></rect>
+<rect x="10" y="10" width="716" height="{{encH}}" rx="46" fill="url(#pbSpot)"></rect>
+<rect x="13" y="13" width="710" height="{{encHi}}" rx="43" fill="none" stroke="#FFFFFF" opacity="0.08" style="stroke-width: 2"></rect>
+<rect x="10" y="10" width="716" height="{{encH}}" rx="46" fill="none" stroke="#141618" style="stroke-width: 3"></rect>
+
+<text x="172" y="104" style="font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-stretch: 85%; font-size: 19px; letter-spacing: 0.6px; text-anchor: middle; fill: #E6E4DF">VOICE</text>
+<circle cx="258" cy="96" r="46" fill="#5EC8FF" opacity="{{voiceGlow}}" filter="url(#pbGlow)"></circle>
+<circle cx="262" cy="106" r="34" fill="#000000" opacity="0.5" filter="url(#pbBlur6)"></circle>
+<circle cx="258" cy="96" r="36" fill="#1C1E21"></circle>
+<circle cx="258" cy="96" r="40" fill="none" stroke="#5EC8FF" opacity="{{voiceRing}}" style="stroke-width: 3"></circle>
+<circle cx="258" cy="96" r="30" fill="url(#pbCap)"></circle>
+<circle cx="258" cy="96" r="30" fill="#5EC8FF" opacity="{{voiceTint}}"></circle>
+<ellipse cx="249" cy="86" rx="13" ry="8" fill="url(#pbSpec)"></ellipse>
+
+<path d="M412 68 V47 H502 M588 47 H680 V68" fill="none" stroke="#E6E4DF" style="stroke-width: 3"></path>
+<text x="545" y="54" style="font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-stretch: 85%; font-size: 17px; letter-spacing: 0.6px; text-anchor: middle; fill: #E6E4DF">SHAPE</text>
+<circle cx="482" cy="108" r="35" fill="#000000" opacity="0.5" filter="url(#pbBlur6)"></circle>
+<circle cx="478" cy="98" r="37" fill="#1C1E21"></circle>
+<circle cx="478" cy="98" r="31" fill="url(#pbCap)"></circle>
+<circle cx="478" cy="98" r="31" fill="#63DB78" opacity="{{shapeTint}}"></circle>
+<ellipse cx="469" cy="88" rx="13" ry="8" fill="url(#pbSpec)"></ellipse>
+
+<circle cx="546" cy="78" r="18" fill="#5FD35A" opacity="{{ledTri}}" filter="url(#pbGlow)"></circle>
+<circle cx="597" cy="78" r="18" fill="#F2A51F" opacity="{{ledSaw}}" filter="url(#pbGlow)"></circle>
+<circle cx="643" cy="78" r="18" fill="#E5484D" opacity="{{ledSq}}" filter="url(#pbGlow)"></circle>
+<circle cx="546" cy="78" r="10" fill="#141619"></circle>
+<circle cx="597" cy="78" r="10" fill="#141619"></circle>
+<circle cx="643" cy="78" r="10" fill="#141619"></circle>
+<circle cx="546" cy="78" r="7" fill="url(#pbLedOff)"></circle>
+<circle cx="597" cy="78" r="7" fill="url(#pbLedOff)"></circle>
+<circle cx="643" cy="78" r="7" fill="url(#pbLedOff)"></circle>
+<circle cx="546" cy="78" r="7" fill="url(#pbLedG)" opacity="{{ledTri}}"></circle>
+<circle cx="597" cy="78" r="7" fill="url(#pbLedA)" opacity="{{ledSaw}}"></circle>
+<circle cx="643" cy="78" r="7" fill="url(#pbLedR)" opacity="{{ledSq}}"></circle>
+<g fill="none" stroke="#E6E4DF" style="stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round">
+<path d="M535 114 L546 99 L557 114"></path>
+<path d="M587 114 L606 99 L606 114"></path>
+<path d="M631 114 L636 114 L636 99 L650 99 L650 114 L655 114"></path>
+</g>
+
+<g opacity="{{ring.on}}" transform="translate({{ring.x}} {{ring.y}})">
+<path d="{{ring.track}}" fill="none" stroke="#FFFFFF" opacity="0.13" style="stroke-width: 5; stroke-linecap: round"></path>
+<path d="{{ring.value}}" fill="none" style="stroke: {{ring.color}}; stroke-width: 5; stroke-linecap: round"></path>
+</g>
+
+<g transform="translate(135 215)" opacity="{{k0.dim}}">
+<ellipse cx="9" cy="16" rx="84" ry="80" fill="#000000" opacity="0.5" filter="url(#pbBlur6)"></ellipse>
+<g style="transform: rotate({{k0.rot}}deg); transition: {{trans}}"><use href="#pbScallop" fill="url(#pbOrSkirt)"></use></g>
+<circle r="76" fill="url(#pbLight)"></circle>
+<circle r="64" fill="url(#pbOrDome)"></circle>
+<circle r="64.5" fill="none" stroke="#000000" opacity="0.08" style="stroke-width: 2"></circle>
+<g style="transform: rotate({{k0.rot}}deg); transition: {{trans}}"><rect x="-4.5" y="-80" width="9" height="50" rx="4.5" fill="#FBFAF6"></rect></g>
+<ellipse cx="-20" cy="-30" rx="26" ry="13" transform="rotate(-35 -20 -30)" fill="url(#pbSpec)" opacity="0.75"></ellipse>
+</g>
+<g transform="translate(365 215)" opacity="{{k1.dim}}">
+<ellipse cx="9" cy="16" rx="84" ry="80" fill="#000000" opacity="0.5" filter="url(#pbBlur6)"></ellipse>
+<g style="transform: rotate({{k1.rot}}deg); transition: {{trans}}"><use href="#pbScallop" fill="url(#pbTeSkirt)"></use></g>
+<circle r="76" fill="url(#pbLight)"></circle>
+<circle r="64" fill="url(#pbTeDome)"></circle>
+<circle r="64.5" fill="none" stroke="#000000" opacity="0.07" style="stroke-width: 2"></circle>
+<g style="transform: rotate({{k1.rot}}deg); transition: {{trans}}"><rect x="-4.5" y="-80" width="9" height="50" rx="4.5" fill="#FBFAF6"></rect></g>
+<ellipse cx="-20" cy="-30" rx="26" ry="13" transform="rotate(-35 -20 -30)" fill="url(#pbSpec)" opacity="0.75"></ellipse>
+</g>
+<g transform="translate(590 215)" opacity="{{k2.dim}}">
+<ellipse cx="9" cy="16" rx="84" ry="80" fill="#000000" opacity="0.5" filter="url(#pbBlur6)"></ellipse>
+<g style="transform: rotate({{k2.rot}}deg); transition: {{trans}}"><use href="#pbScallop" fill="url(#pbTeSkirt)"></use></g>
+<circle r="76" fill="url(#pbLight)"></circle>
+<circle r="64" fill="url(#pbTeDome)"></circle>
+<circle r="64.5" fill="none" stroke="#000000" opacity="0.07" style="stroke-width: 2"></circle>
+<g style="transform: rotate({{k2.rot}}deg); transition: {{trans}}"><rect x="-4.5" y="-80" width="9" height="50" rx="4.5" fill="#FBFAF6"></rect></g>
+<ellipse cx="-20" cy="-30" rx="26" ry="13" transform="rotate(-35 -20 -30)" fill="url(#pbSpec)" opacity="0.75"></ellipse>
+</g>
+<g transform="translate(135 446)" opacity="{{k3.dim}}">
+<ellipse cx="9" cy="16" rx="84" ry="80" fill="#000000" opacity="0.5" filter="url(#pbBlur6)"></ellipse>
+<g style="transform: rotate({{k3.rot}}deg); transition: {{trans}}"><use href="#pbScallop" fill="url(#pbOrSkirt)"></use></g>
+<circle r="76" fill="url(#pbLight)"></circle>
+<circle r="64" fill="url(#pbOrDome)"></circle>
+<circle r="64.5" fill="none" stroke="#000000" opacity="0.08" style="stroke-width: 2"></circle>
+<g style="transform: rotate({{k3.rot}}deg); transition: {{trans}}"><rect x="-4.5" y="-80" width="9" height="50" rx="4.5" fill="#FBFAF6"></rect></g>
+<ellipse cx="-20" cy="-30" rx="26" ry="13" transform="rotate(-35 -20 -30)" fill="url(#pbSpec)" opacity="0.75"></ellipse>
+</g>
+<g transform="translate(365 446)" opacity="{{k4.dim}}">
+<ellipse cx="9" cy="16" rx="84" ry="80" fill="#000000" opacity="0.5" filter="url(#pbBlur6)"></ellipse>
+<g style="transform: rotate({{k4.rot}}deg); transition: {{trans}}"><use href="#pbScallop" fill="url(#pbTeSkirt)"></use></g>
+<circle r="76" fill="url(#pbLight)"></circle>
+<circle r="64" fill="url(#pbTeDome)"></circle>
+<circle r="64.5" fill="none" stroke="#000000" opacity="0.07" style="stroke-width: 2"></circle>
+<g style="transform: rotate({{k4.rot}}deg); transition: {{trans}}"><rect x="-4.5" y="-80" width="9" height="50" rx="4.5" fill="#FBFAF6"></rect></g>
+<ellipse cx="-20" cy="-30" rx="26" ry="13" transform="rotate(-35 -20 -30)" fill="url(#pbSpec)" opacity="0.75"></ellipse>
+</g>
+<g transform="translate(590 446)" opacity="{{k5.dim}}">
+<ellipse cx="9" cy="16" rx="84" ry="80" fill="#000000" opacity="0.5" filter="url(#pbBlur6)"></ellipse>
+<g style="transform: rotate({{k5.rot}}deg); transition: {{trans}}"><use href="#pbScallop" fill="url(#pbTeSkirt)"></use></g>
+<circle r="76" fill="url(#pbLight)"></circle>
+<circle r="64" fill="url(#pbTeDome)"></circle>
+<circle r="64.5" fill="none" stroke="#000000" opacity="0.07" style="stroke-width: 2"></circle>
+<g style="transform: rotate({{k5.rot}}deg); transition: {{trans}}"><rect x="-4.5" y="-80" width="9" height="50" rx="4.5" fill="#FBFAF6"></rect></g>
+<ellipse cx="-20" cy="-30" rx="26" ry="13" transform="rotate(-35 -20 -30)" fill="url(#pbSpec)" opacity="0.75"></ellipse>
+</g>
+
+<g style="font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-stretch: 85%; font-size: 23px; letter-spacing: 0.6px; text-anchor: middle; fill: {{labelFill}}">
+<text x="135" y="336">{{l0}}</text>
+<text x="365" y="336">{{l1}}</text>
+<text x="590" y="336">{{l2}}</text>
+<text x="135" y="567">{{l3}}</text>
+<text x="365" y="567">{{l4}}</text>
+<text x="590" y="567">{{l5}}</text>
+</g>
+<g opacity="{{lg.on}}" style="font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-stretch: 85%; font-size: 13px; letter-spacing: 0.5px; text-anchor: middle; fill: #8BE59A">
+<text x="47" y="303" style="fill-opacity: {{lg.c0}}">OFF</text>
+<text x="223" y="303" style="fill-opacity: {{lg.c1}}">LIMIT</text>
+<text x="502" y="303" style="fill-opacity: {{lg.d0}}">OFF</text>
+<text x="678" y="303" style="fill-opacity: {{lg.d1}}">ON</text>
+<text x="277" y="534" style="fill-opacity: {{lg.t0}}">5S</text>
+<text x="365" y="352" style="fill-opacity: {{lg.t1}}">4S</text>
+<text x="453" y="534" style="fill-opacity: {{lg.t2}}">GTR</text>
+<text x="502" y="534" style="fill-opacity: {{lg.o0}}">MONO</text>
+<text x="590" y="352" style="fill-opacity: {{lg.o1}}">WET/DRY</text>
+<text x="678" y="534" style="fill-opacity: {{lg.o2}}">STEREO</text>
+</g>
+
+<text x="62" y="627" transform="rotate(-90 62 627)" style="font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-stretch: 85%; font-size: 21px; letter-spacing: 0.6px; text-anchor: middle; fill: #E6E4DF">OUT</text>
+<text x="674" y="627" transform="rotate(90 674 627)" style="font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-stretch: 85%; font-size: 21px; letter-spacing: 0.6px; text-anchor: middle; fill: #E6E4DF">IN</text>
+
+<rect x="240" y="594" width="240" height="88" rx="20" fill="none" stroke="#E6E4DF" style="stroke-width: 6"></rect>
+<text x="362" y="664" style="font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-size: 68px; letter-spacing: 4px; text-anchor: middle; fill: #E6E4DF">MXR</text>
+<text x="488" y="692" style="font-family: 'Instrument Sans', sans-serif; font-size: 12px; fill: #E6E4DF">®</text>
+<text x="360" y="716" style="font-family: 'Instrument Sans', sans-serif; font-size: 18px; letter-spacing: 0.3px; text-anchor: middle; fill: #E6E4DF"><tspan style="font-weight: 700">BASS</tspan><tspan style="font-weight: 400">INNOVATIONS</tspan></text>
+
+<circle cx="360" cy="782" r="48" fill="#3FB5F0" opacity="{{bypassGlow}}" filter="url(#pbGlow)"></circle>
+<circle cx="360" cy="782" r="25" fill="#0E0F11"></circle>
+<circle cx="360" cy="782" r="25" fill="none" stroke="#FFFFFF" opacity="0.08" style="stroke-width: 2"></circle>
+<circle cx="360" cy="782" r="15" fill="url(#pbLedOff)"></circle>
+<circle cx="360" cy="782" r="15" fill="url(#pbLedBlue)" opacity="{{bypassOn}}"></circle>
+<ellipse cx="355" cy="776" rx="6" ry="4" fill="#FFFFFF" opacity="0.45"></ellipse>
+
+<ellipse cx="378" cy="982" rx="98" ry="92" fill="#000000" opacity="0.55" filter="url(#pbBlur14)"></ellipse>
+<polygon points="444.7,1006 365,1052 285.3,1006 285.3,914 365,868 444.7,914" fill="url(#pbChrome)"></polygon>
+<polygon points="444.7,1006 365,1052 285.3,1006 285.3,914 365,868 444.7,914" fill="none" stroke="#3A3F45" opacity="0.6" style="stroke-width: 2"></polygon>
+<circle cx="365" cy="960" r="72" fill="url(#pbChromeV)" stroke="#565C63" style="stroke-width: 1.5"></circle>
+<circle cx="365" cy="960" r="62" fill="#2A2E33"></circle>
+<circle cx="365" cy="960" r="57" fill="url(#pbFsCap)"></circle>
+<g fill="none" stroke="#FFFFFF" style="stroke-width: 1.4">
+<circle cx="365" cy="960" r="49" opacity="0.14"></circle>
+<circle cx="365" cy="960" r="40" opacity="0.11"></circle>
+<circle cx="365" cy="960" r="31" opacity="0.09"></circle>
+<circle cx="365" cy="960" r="22" opacity="0.07"></circle>
+</g>
+<ellipse cx="344" cy="938" rx="26" ry="12" transform="rotate(-32 344 938)" fill="url(#pbSpec)" opacity="0.6"></ellipse>
+
+<text x="367" y="1150" style="font-family: 'Comfortaa', sans-serif; font-weight: 300; font-size: 96px; letter-spacing: 1px; text-anchor: middle; fill: #E6E4DF">bass synth</text>
+
+<circle cx="245" cy="1205" r="17" fill="#5FD35A" opacity="{{pl.g0}}" filter="url(#pbGlow)"></circle>
+<circle cx="305" cy="1205" r="17" fill="#5FD35A" opacity="{{pl.g1}}" filter="url(#pbGlow)"></circle>
+<circle cx="365" cy="1205" r="17" fill="#5FD35A" opacity="{{pl.g2}}" filter="url(#pbGlow)"></circle>
+<circle cx="428" cy="1205" r="17" fill="#5FD35A" opacity="{{pl.g3}}" filter="url(#pbGlow)"></circle>
+<circle cx="245" cy="1205" r="17" fill="#E5484D" opacity="{{pl.r0}}" filter="url(#pbGlow)"></circle>
+<circle cx="305" cy="1205" r="17" fill="#E5484D" opacity="{{pl.r1}}" filter="url(#pbGlow)"></circle>
+<circle cx="365" cy="1205" r="17" fill="#E5484D" opacity="{{pl.r2}}" filter="url(#pbGlow)"></circle>
+<circle cx="428" cy="1205" r="17" fill="#E5484D" opacity="{{pl.r3}}" filter="url(#pbGlow)"></circle>
+<g fill="#16181B">
+<circle cx="245" cy="1205" r="13"></circle>
+<circle cx="305" cy="1205" r="13"></circle>
+<circle cx="365" cy="1205" r="13"></circle>
+<circle cx="428" cy="1205" r="13"></circle>
+</g>
+<g fill="url(#pbLedFrost)">
+<circle cx="245" cy="1205" r="10"></circle>
+<circle cx="305" cy="1205" r="10"></circle>
+<circle cx="365" cy="1205" r="10"></circle>
+<circle cx="428" cy="1205" r="10"></circle>
+</g>
+<circle cx="245" cy="1205" r="10" fill="url(#pbLedG)" opacity="{{pl.g0}}"></circle>
+<circle cx="305" cy="1205" r="10" fill="url(#pbLedG)" opacity="{{pl.g1}}"></circle>
+<circle cx="365" cy="1205" r="10" fill="url(#pbLedG)" opacity="{{pl.g2}}"></circle>
+<circle cx="428" cy="1205" r="10" fill="url(#pbLedG)" opacity="{{pl.g3}}"></circle>
+<circle cx="245" cy="1205" r="10" fill="url(#pbLedR)" opacity="{{pl.r0}}"></circle>
+<circle cx="305" cy="1205" r="10" fill="url(#pbLedR)" opacity="{{pl.r1}}"></circle>
+<circle cx="365" cy="1205" r="10" fill="url(#pbLedR)" opacity="{{pl.r2}}"></circle>
+<circle cx="428" cy="1205" r="10" fill="url(#pbLedR)" opacity="{{pl.r3}}"></circle>
+<circle cx="488" cy="1205" r="18" fill="#111214"></circle>
+<circle cx="488" cy="1205" r="14" fill="#4B2B27"></circle>
+<ellipse cx="484" cy="1200" rx="6" ry="4" fill="#FFFFFF" opacity="0.25"></ellipse>
+<polygon points="514,1195 514,1215 530,1205" fill="#E6E4DF"></polygon>
+<path d="M208 1226 V1244 H284 M380 1244 H456 V1226" fill="none" stroke="#E6E4DF" style="stroke-width: 2.6"></path>
+<text x="332" y="1250" style="font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-stretch: 85%; font-size: 14px; letter-spacing: 0.6px; text-anchor: middle; fill: #E6E4DF">PRESETS</text>
+</svg>
+
+<sc-for list="{{hot}}" as="h" hint-placeholder-count="10">
+<button type="button" aria-label="{{h.aria}}" onClick="{{h.click}}" onPointerDown="{{h.down}}" onPointerMove="{{h.move}}" onPointerUp="{{h.up}}" onPointerLeave="{{h.pleave}}" onPointerCancel="{{h.up}}" onKeyDown="{{h.key}}" onMouseEnter="{{h.enter}}" onMouseLeave="{{h.leave}}" onFocus="{{h.enter}}" onBlur="{{h.leave}}" style="position: absolute; left: {{h.left}}%; top: {{h.top}}%; width: {{h.size}}%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%); border-radius: 50%; border: 0; padding: 0; margin: 0; background: transparent; cursor: {{h.cursor}}; touch-action: none"></button>
+</sc-for>
+</div>
+
+<sc-if value="{{compact}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; gap: 8px; width: 100%">
+<button type="button" aria-pressed="{{engagedStr}}" onClick="{{toggleEngaged}}" style="flex: 0 0 auto; min-height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #2A313A; background: #141920; color: #E8EAED; display: flex; align-items: center; gap: 8px; font-family: inherit; font-weight: 600; font-size: 14px; cursor: pointer">
+<span style="width: 10px; height: 10px; border-radius: 50%; background: {{fsDot}}; box-shadow: 0 0 8px {{fsGlow}}"></span>
+<span>{{fsLabel}}</span>
+</button>
+<div style="flex: 1; min-width: 0; display: flex; align-items: center; border-radius: 12px; border: 1px solid #2A313A; background: #141920">
+<button type="button" aria-label="Previous preset" onClick="{{prevPreset}}" style="width: 44px; height: 48px; border: 0; background: transparent; color: #C9D1D9; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+</button>
+<div style="flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 8px">
+<span style="width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; background: {{bankColor}}; box-shadow: 0 0 8px {{bankGlow}}"></span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #9AA4AE">{{presetCode}}</span>
+<span style="font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{presetName}}</span>
+</div>
+<button type="button" aria-label="Next preset" onClick="{{nextPreset}}" style="width: 44px; height: 48px; border: 0; background: transparent; color: #C9D1D9; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
+</button>
+</div>
+</div>
+</sc-if>
+
+<div role="group" aria-label="Knob layer" style="display: flex; gap: 4px; padding: 4px; background: #141920; border: 1px solid #232A33; border-radius: 12px; width: 100%; max-width: {{maxW}}; box-sizing: border-box">
+<sc-for list="{{layers}}" as="b" hint-placeholder-count="3">
+<button type="button" aria-pressed="{{b.pressed}}" onClick="{{b.click}}" style="flex: 1; min-height: 44px; border: 0; border-radius: 9px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 4px 6px; background: {{b.bg}}; color: {{b.fg}}">
+<span style="font-size: 13.5px; font-weight: 600">{{b.label}}</span>
+<span style="font-size: 11px; opacity: 0.8">{{b.sub}}</span>
+</button>
+</sc-for>
+</div>
+
+<sc-if value="{{showCaption}}" hint-placeholder-val="{{ true }}">
+<div style="width: 100%; max-width: 440px; box-sizing: border-box; background: #141920; border: 1px solid #232A33; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; background: {{cap.color}}"></span>
+<span style="font-weight: 600; font-size: 15px; letter-spacing: 0.02em">{{cap.title}}</span>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #C9D1D9; text-align: right">{{cap.value}}</span>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 1.45; color: #B7C0C9">{{cap.text}}</p>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"layer":{"editor":"enum","options":["main","voice","shape"],"default":"main"},"focus":{"editor":"enum","options":["none","mix","cutoff","envelope","sub","resonance","mod"],"default":"none"},"spotlight":{"editor":"enum","options":["none","mix","cutoff","envelope","sub","resonance","mod"],"default":"none"},"caption":{"editor":"boolean","default":true},"compact":{"editor":"boolean","default":false},"$preview":{"width":560,"height":1080}}'>
+class Component extends DCLogic {
+  constructor(...args) {
+    super(...args);
+    const P = this.presets();
+    const start = 3;
+    this.drag = null;
+    this.holdTimer = null;
+    this.held = null;
+    this.skipClick = false;
+    this.state = {
+      preset: start,
+      vals: this.valsOf(P[start]),
+      shape: P[start].shape,
+      voiceOn: !!P[start].voice,
+      engaged: true,
+      layer: null,
+      hold: null,
+      focus: this.initialFocus(),
+      dragging: null,
+      edited: false
+    };
+  }
+
+  posKeys() { return ['mix', 'cutoff', 'envelope', 'sub', 'resonance', 'mod']; }
+
+  initialFocus() {
+    const f = this.props ? this.props.focus : null;
+    const i = this.posKeys().indexOf(f);
+    return i >= 0 ? i : null;
+  }
+
+  presets() {
+    if (this._p) return this._p;
+    const V = { vmix: 12, noise: 7, envamt: 14, ampenv: 7, glide: 7, blend: 9 };
+    const S = { comp: 9, gain: 12, gate: 12, dry: 7, track: 7, out: 7 };
+    const mk = (code, name, shape, voice, m, v, s) => ({ code, name, shape, voice, m: Object.assign({}, m), v: Object.assign({}, V, v || {}), s: Object.assign({}, S, s || {}) });
+    this._p = [
+      mk('LIVE', 'Live mode', 1, false, { mix: 14, sub: 11, cutoff: 11, env: 10, res: 12, mod: 9 }),
+      mk('G1', 'Thrillenganes', 1, false, { mix: 15, sub: 13, cutoff: 11, env: 9, res: 10, mod: 7 }, null, { comp: 10 }),
+      mk('G2', 'Wonderful', 2, false, { mix: 14, sub: 9, cutoff: 9, env: 9, res: 14, mod: 7 }, { envamt: 15, glide: 9 }),
+      mk('G3', 'Lizard Synth', 1, false, { mix: 16, sub: 9, cutoff: 10, env: 11, res: 15, mod: 7 }),
+      mk('G4', 'Synthadelic', 2, false, { mix: 16, sub: 14, cutoff: 15, env: 7, res: 10, mod: 8 }, { glide: 10 }),
+      mk('R1', 'Sledge', 0, false, { mix: 13, sub: 14, cutoff: 13, env: 7, res: 9, mod: 12 }, { blend: 8 }, { comp: 15 }),
+      mk('R2', 'Army of Synth', 1, true, { mix: 15, sub: 11, cutoff: 10, env: 10, res: 12, mod: 7 }, { vmix: 13 }, { comp: 14 }),
+      mk('R3', 'Nine Inch Synth', 2, true, { mix: 16, sub: 10, cutoff: 12, env: 10, res: 13, mod: 7 }, { noise: 9 }),
+      mk('R4', 'Synthmau5', 1, false, { mix: 17, sub: 11, cutoff: 10, env: 13, res: 12, mod: 10 }, { envamt: 9, ampenv: 11, blend: 15 })
+    ];
+    return this._p;
+  }
+
+  valsOf(p) { return Object.assign({}, p.m, p.v, p.s); }
+
+  meta() {
+    if (this._m) return this._m;
+    const C = { osc: '#F2A93B', filter: '#43C6CF', env: '#A68BF5', mod: '#EE7BB8', out: '#A6D96A', input: '#8C99A8' };
+    this._m = {
+      pos: [
+        { x: 135, y: 215, main: 'mix', voice: 'vmix', shape: 'comp' },
+        { x: 365, y: 215, main: 'cutoff', voice: 'envamt', shape: 'gate' },
+        { x: 590, y: 215, main: 'env', voice: 'ampenv', shape: 'dry' },
+        { x: 135, y: 446, main: 'sub', voice: 'noise', shape: 'gain' },
+        { x: 365, y: 446, main: 'res', voice: 'glide', shape: 'track' },
+        { x: 590, y: 446, main: 'mod', voice: 'blend', shape: 'out' }
+      ],
+      params: {
+        mix: { label: 'MIX', color: C.out, one: 'Blends your clean bass with the synth. Left: more of your real bass. Right: more synth.' },
+        cutoff: { label: 'CUTOFF', color: C.filter, one: 'How bright the synth is. The filter lets low sounds through and blocks high ones. Left: darker. Right: brighter.' },
+        env: { label: 'ENVELOPE', color: C.env, one: 'How fast the brightness blooms and fades after each note. Left: quick pluck. Right: slow sweep. Fully left: off.' },
+        sub: { label: 'SUB MIX', color: C.osc, one: 'Blends in a second synth voice one octave lower. Left: main synth only. Right: deep sub only.' },
+        res: { label: 'RESONANCE', color: C.filter, one: 'Adds a sharp, singing peak right at the cutoff point. Left: smooth. Right: squelchy and vocal.' },
+        mod: { label: 'MOD', color: C.mod, one: 'Adds movement: a chorus shimmer or a pulsing filter wobble. Left: still. Right: moving.' },
+        vmix: { label: 'VOICE MIX', color: C.osc, one: 'How loud the extra harmony voices are. Fully left removes them.' },
+        envamt: { label: 'FILTER ENV AMT', color: C.env, one: 'How far, and which way, the envelope moves the cutoff. Above noon notes bloom brighter, below noon they duck darker.' },
+        ampenv: { label: 'AMP ENV', color: C.env, one: 'How slowly each note fades in. Left: instant. Right: slow swell.' },
+        noise: { label: 'NOISE MIX', color: C.osc, one: 'Blends in hiss for breathy or gritty textures.' },
+        glide: { label: 'GLIDE', color: C.osc, one: 'Slides smoothly from one note to the next instead of jumping.' },
+        blend: { label: 'MOD BLEND', color: C.mod, one: 'Chooses what MOD moves. Left: chorus shimmer. Right: filter wobble (LFO).' },
+        comp: { label: 'COMP', color: C.out, one: 'Evens out loud and soft notes, from off to tight limiting.' },
+        gate: { label: 'GATE SENS.', color: C.input, one: 'How easily soft notes trigger the synth. Applies to all presets.' },
+        dry: { label: 'DRY THRU FX', color: C.out, steps: 2, one: 'When on, your clean bass also runs through the filter and effects.' },
+        gain: { label: 'OUTPUT GAIN', color: C.out, one: 'Overall volume, plus or minus 18 dB. Noon is 0 dB.' },
+        track: { label: 'TRACKING', color: C.input, steps: 3, one: 'Tells the pedal which instrument range to listen for: 5-string, 4-string or guitar.' },
+        out: { label: 'OUTPUT MODE', color: C.out, steps: 3, one: 'How the sound leaves the pedal: mono, wet left and dry right, or full stereo.' }
+      }
+    };
+    return this._m;
+  }
+
+  readout(id, h) {
+    const k = (h - 7) / 10;
+    const pct = Math.round(k * 100);
+    const ms = (v) => (v >= 1000 ? (v / 1000).toFixed(2) + ' s' : Math.round(v) + ' ms');
+    const hz = (v) => (v >= 1000 ? (v / 1000).toFixed(1) + ' kHz' : Math.round(v) + ' Hz');
+    const step = (n) => Math.round(k * (n - 1));
+    switch (id) {
+      case 'mix': return pct + '% synth';
+      case 'cutoff': return hz(40 * Math.pow(2, 8 * k));
+      case 'env': return k < 0.02 ? 'off' : 'attack ' + ms(Math.pow(300, k)) + ', decay ' + ms(60 * Math.pow(50, k));
+      case 'sub': return pct + '% sub';
+      case 'res': return pct + '%' + (k > 0.7 ? ', strong peak' : k > 0.35 ? ', clear peak' : ', smooth');
+      case 'mod': return k < 0.02 ? 'off' : pct + '% depth, ' + (0.3 * Math.pow(20, k)).toFixed(1) + ' Hz';
+      case 'vmix': return pct + '% voices';
+      case 'noise': return pct + '% noise';
+      case 'envamt': { const o = (k - 0.5) * 10; return (o >= 0 ? '+' : '−') + Math.abs(o).toFixed(1) + ' oct, ' + (o >= 0 ? 'opens' : 'closes'); }
+      case 'ampenv': return 'fade-in ' + ms(Math.pow(1500, k));
+      case 'glide': return k < 0.02 ? 'off' : ms(5 * Math.pow(200, k));
+      case 'blend': return Math.round((1 - k) * 100) + '% chorus, ' + pct + '% LFO';
+      case 'comp': return k < 0.02 ? 'off' : pct + '%' + (k > 0.9 ? ', limiting' : '');
+      case 'gate': return pct + '% sensitivity';
+      case 'dry': return k < 0.5 ? 'OFF' : 'ON';
+      case 'gain': { const db = (k - 0.5) * 36; return (db >= 0 ? '+' : '−') + Math.abs(db).toFixed(1) + ' dB'; }
+      case 'track': return ['5-string bass', '4-string bass', 'guitar'][step(3)];
+      case 'out': return ['MONO', 'WET/DRY', 'STEREO'][step(3)];
+    }
+    return '';
+  }
+
+  clock(h) {
+    if (h <= 7.05) return 'min';
+    if (h >= 16.95) return 'max';
+    const r = Math.round(h);
+    return (((r - 1) % 12) + 1) + ' o’clock';
+  }
+
+  snap(h, n) {
+    const idx = Math.round(((h - 7) / 10) * (n - 1));
+    return 7 + (idx * 10) / (n - 1);
+  }
+
+  setVal(id, h) {
+    const p = this.meta().params[id];
+    let v = Math.max(7, Math.min(17, h));
+    if (p.steps) v = this.snap(v, p.steps);
+    const s = this.state;
+    if (s.vals[id] === v) return;
+    this.setState({ vals: Object.assign({}, s.vals, { [id]: v }), edited: s.preset !== 0 });
+  }
+
+  applyPreset(i) {
+    const p = this.presets()[i];
+    this.setState({ preset: i, vals: this.valsOf(p), shape: p.shape, voiceOn: !!p.voice, edited: false });
+  }
+
+  holdStart(which) {
+    clearTimeout(this.holdTimer);
+    this.held = null;
+    this.holdTimer = setTimeout(() => { this.held = which; this.setState({ hold: which }); }, 320);
+  }
+
+  holdEnd() {
+    clearTimeout(this.holdTimer);
+    if (this.held) {
+      this.held = null;
+      this.skipClick = true;
+      this.setState({ hold: null });
+    }
+  }
+
+  arc(r, a0, a1) {
+    const pt = (a) => { const t = (a * Math.PI) / 180; return (r * Math.sin(t)).toFixed(1) + ' ' + (-r * Math.cos(t)).toFixed(1); };
+    if (a1 - a0 < 0.5) return 'M' + pt(a0);
+    return 'M' + pt(a0) + ' A' + r + ' ' + r + ' 0 ' + (a1 - a0 > 180 ? 1 : 0) + ' 1 ' + pt(a1);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const props = this.props || {};
+    const P = this.presets();
+    const M = this.meta();
+    const compact = props.compact === true || props.compact === 'true';
+    const caption = !(props.caption === false || props.caption === 'false');
+    const layer = s.hold || s.layer || (props.layer === 'voice' || props.layer === 'shape' ? props.layer : 'main');
+    const spot = this.posKeys().indexOf(props.spotlight);
+    const preset = P[s.preset];
+
+    const vbH = compact ? 600 : 1350;
+    const pct = (v) => Math.round(v * 1000) / 1000;
+    const knobs = M.pos.map((p, i) => {
+      const id = p[layer];
+      const h = s.vals[id];
+      return { id, rot: Math.round((h - 12) * 30 * 10) / 10, dim: spot >= 0 && spot !== i ? 0.28 : 1 };
+    });
+
+    const focus = s.focus;
+    let ring = { on: 0, x: 0, y: 0, track: 'M0 0', value: 'M0 0', color: '#43C6CF' };
+    if (focus != null) {
+      const p = M.pos[focus];
+      const id = p[layer];
+      ring = { on: 1, x: p.x, y: p.y, track: this.arc(101, -150, 150), value: this.arc(101, -150, (s.vals[id] - 12) * 30), color: M.params[id].color };
+    }
+
+    const step3 = (h) => Math.round(((h - 7) / 10) * 2);
+    const on = (b) => (b ? 1 : 0.4);
+    const v = s.vals;
+    const lg = {
+      on: layer === 'shape' ? 1 : 0,
+      c0: on(v.comp < 8), c1: on(v.comp > 16),
+      d0: on(v.dry < 12), d1: on(v.dry >= 12),
+      t0: on(step3(v.track) === 0), t1: on(step3(v.track) === 1), t2: on(step3(v.track) === 2),
+      o0: on(step3(v.out) === 0), o1: on(step3(v.out) === 1), o2: on(step3(v.out) === 2)
+    };
+
+    const pi = s.preset;
+    const pl = {};
+    for (let i = 0; i < 4; i++) {
+      const lit = pi > 0 && (pi - 1) % 4 === i;
+      const a = lit ? (s.edited ? 0.55 : 1) : 0;
+      pl['g' + i] = pi > 0 && pi <= 4 ? a : 0;
+      pl['r' + i] = pi > 4 ? a : 0;
+    }
+    const bankColor = pi === 0 ? '#5B6470' : pi <= 4 ? '#5FD35A' : '#E5484D';
+
+    const ox = (x) => pct(((x + 34) / 804) * 100);
+    const oy = (y) => pct(((y + 10) / vbH) * 100);
+    const sz = (d) => pct((d / 804) * 100);
+    const hot = M.pos.map((p, i) => {
+      const id = p[layer];
+      const par = M.params[id];
+      return {
+        aria: par.label + ' knob, ' + this.clock(v[id]) + ', ' + this.readout(id, v[id]) + '. Drag up or down, or use the arrow keys.',
+        left: ox(p.x), top: oy(p.y), size: sz(176), cursor: 'ns-resize',
+        down: (e) => {
+          try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { }
+          this.drag = { i, id, y: e.clientY, v: v[id] };
+          this.setState({ dragging: i, focus: i });
+        },
+        move: (e) => {
+          const d = this.drag;
+          if (!d || d.i !== i) return;
+          this.setVal(d.id, d.v + (d.y - e.clientY) / 16);
+        },
+        up: () => {
+          if (this.drag && this.drag.i === i) { this.drag = null; this.setState({ dragging: null }); }
+        },
+        key: (e) => {
+          const stepH = par.steps ? 10 / (par.steps - 1) : 0.25;
+          let nv = v[id];
+          if (e.key === 'ArrowUp' || e.key === 'ArrowRight') nv += stepH;
+          else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') nv -= stepH;
+          else if (e.key === 'PageUp') nv += 1;
+          else if (e.key === 'PageDown') nv -= 1;
+          else if (e.key === 'Home') nv = 7;
+          else if (e.key === 'End') nv = 17;
+          else return;
+          e.preventDefault();
+          this.setVal(id, nv);
+        },
+        enter: () => this.setState({ focus: i }),
+        leave: () => { if (this.state.dragging == null) this.setState({ focus: this.initialFocus() }); }
+      };
+    });
+    hot.push({
+      aria: 'VOICE button. Tap to add harmony voices. Hold to show the voice layer.',
+      left: ox(258), top: oy(96), size: sz(88), cursor: 'pointer',
+      click: () => { if (this.skipClick) { this.skipClick = false; return; } this.setState({ voiceOn: !this.state.voiceOn, edited: this.state.preset !== 0 }); },
+      down: () => this.holdStart('voice'), up: () => this.holdEnd(), pleave: () => this.holdEnd()
+    });
+    hot.push({
+      aria: 'SHAPE button. Tap to change the waveform. Hold to show the shape layer.',
+      left: ox(478), top: oy(98), size: sz(88), cursor: 'pointer',
+      click: () => { if (this.skipClick) { this.skipClick = false; return; } this.setState({ shape: (this.state.shape + 1) % 3, edited: this.state.preset !== 0 }); },
+      down: () => this.holdStart('shape'), up: () => this.holdEnd(), pleave: () => this.holdEnd()
+    });
+    if (!compact) {
+      hot.push({
+        aria: s.engaged ? 'Footswitch. The synth is on. Tap to bypass.' : 'Footswitch. The synth is bypassed. Tap to turn it on.',
+        left: ox(365), top: oy(960), size: sz(184), cursor: 'pointer',
+        click: () => this.setState({ engaged: !this.state.engaged })
+      });
+      hot.push({
+        aria: 'PRESETS button. Tap for the next preset.',
+        left: ox(488), top: oy(1205), size: sz(56), cursor: 'pointer',
+        click: () => this.applyPreset((this.state.preset + 1) % P.length)
+      });
+    }
+
+    const layerDefs = [
+      { key: 'main', label: 'Main', sub: 'as printed', bg: '#2A313A', fg: '#E8EAED' },
+      { key: 'voice', label: 'Voice layer', sub: 'hold VOICE', bg: 'rgba(94, 200, 255, 0.16)', fg: '#8FD3FF' },
+      { key: 'shape', label: 'Shape layer', sub: 'hold SHAPE', bg: 'rgba(99, 219, 120, 0.15)', fg: '#8BE59A' }
+    ];
+    const layers = layerDefs.map((d) => ({
+      label: d.label, sub: d.sub,
+      pressed: layer === d.key ? 'true' : 'false',
+      bg: layer === d.key ? d.bg : 'transparent',
+      fg: layer === d.key ? d.fg : '#9AA4AE',
+      click: () => this.setState({ layer: d.key })
+    }));
+
+    const shapeNames = ['Triangle: smooth and subtle', 'Sawtooth: rich and aggressive', 'Square: fat, rubbery punch'];
+    let cap;
+    if (focus != null) {
+      const id = M.pos[focus][layer];
+      const par = M.params[id];
+      cap = { title: par.label, value: this.clock(v[id]) + ' · ' + this.readout(id, v[id]), text: par.one, color: par.color };
+    } else {
+      cap = {
+        title: 'Try it',
+        value: shapeNames[s.shape].split(':')[0],
+        text: 'Drag a knob up or down. Tap SHAPE, VOICE, the footswitch or PRESETS. Hold VOICE or SHAPE (or use the layer switch) to reveal the hidden second set of controls.',
+        color: '#F2A93B'
+      };
+    }
+
+    const labelFill = layer === 'voice' ? '#8FD3FF' : layer === 'shape' ? '#8BE59A' : '#E6E4DF';
+    return {
+      showTopBar: !compact,
+      compact,
+      showCaption: caption && !compact,
+      maxW: compact ? '100%' : '440px',
+      aspect: '804 / ' + vbH,
+      vb: '-34 -10 804 ' + vbH,
+      encH: compact ? 586 : 1308,
+      encHi: compact ? 580 : 1302,
+      svgLabel: 'MXR Bass Synth pedal, ' + (pi === 0 ? 'live mode' : preset.code + ' ' + preset.name) + ', synth ' + (s.engaged ? 'on' : 'bypassed'),
+      trans: s.dragging != null ? 'none' : 'transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)',
+      k0: knobs[0], k1: knobs[1], k2: knobs[2], k3: knobs[3], k4: knobs[4], k5: knobs[5],
+      l0: M.params[knobs[0].id].label, l1: M.params[knobs[1].id].label, l2: M.params[knobs[2].id].label,
+      l3: M.params[knobs[3].id].label, l4: M.params[knobs[4].id].label, l5: M.params[knobs[5].id].label,
+      labelFill,
+      lg,
+      ring,
+      ledTri: s.shape === 0 ? 1 : 0,
+      ledSaw: s.shape === 1 ? 1 : 0,
+      ledSq: s.shape === 2 ? 1 : 0,
+      voiceRing: s.voiceOn ? 1 : 0,
+      voiceGlow: s.voiceOn ? 0.45 : 0,
+      voiceTint: layer === 'voice' ? 0.85 : 0,
+      shapeTint: layer === 'shape' ? 0.85 : 0,
+      bypassOn: s.engaged ? 1 : 0,
+      bypassGlow: s.engaged ? 0.7 : 0,
+      pl,
+      hot,
+      layers,
+      cap,
+      presetCode: pi === 0 ? 'LIVE' : preset.code + (pi <= 4 ? ' · GREEN' : ' · RED'),
+      presetName: pi === 0 ? 'Live mode (your knobs)' : preset.name,
+      bankColor,
+      bankGlow: pi === 0 ? 'transparent' : bankColor,
+      edited: s.edited,
+      prevPreset: () => this.applyPreset((this.state.preset + P.length - 1) % P.length),
+      nextPreset: () => this.applyPreset((this.state.preset + 1) % P.length),
+      toggleEngaged: () => this.setState({ engaged: !this.state.engaged }),
+      engagedStr: s.engaged ? 'true' : 'false',
+      fsLabel: s.engaged ? 'Synth on' : 'Bypassed',
+      fsDot: s.engaged ? '#49B9F0' : '#3A4450',
+      fsGlow: s.engaged ? '#49B9F0' : 'transparent'
+    };
+  }
+}
+</script>
+</body>
+</html>
