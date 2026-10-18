@@ -146,7 +146,7 @@ export const presetRecipes: readonly PresetRecipe[] = [
 export const presetsCopy = {
   galleryLabel: 'Factory presets',
   bank: { green: 'Green bank', red: 'Red bank' },
-  inspiredBy: 'Inspired by',
+  inspiredBy: 'Inspiration:',
   whyTitle: 'Why it sounds like this',
   ingredients: 'Key ingredients',
   knobs: 'Main knobs',

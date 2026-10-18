@@ -43,6 +43,7 @@ function features(s: Snapshot): Record<VizId, number[][]> {
       Array.from(s.pitch.pitch, (p) => (Number.isNaN(p) ? -1 : p)),
       s.pitch.notes.map((n) => Number(n.triggered)),
     ],
+    spectrogram: [Array.from(s.spectrogram.data)],
     meter: [
       [s.meter.peakLeft],
       [s.meter.peakRight],
@@ -90,6 +91,29 @@ describe('computed snapshot', () => {
     expect(envelopeSeconds(settings({ envelope: 1 }))).toBeGreaterThan(
       envelopeSeconds(settings({ envelope: clock(9) })),
     )
+  })
+
+  it('gives the spectrogram one column per 10 ms of the envelope graph', () => {
+    expect(s.spectrogram.frames).toBe(Math.round(s.envelope.seconds / 0.01))
+    expect(s.spectrogram.data.length).toBe(s.spectrogram.frames * s.spectrogram.rows)
+  })
+
+  it('shows the filter envelope as a brightness sweep in the spectrogram', () => {
+    // A slow envelope that opens the filter: the top of the sound rises after the note starts.
+    const sweep = computeSnapshot(
+      settings({ cutoff: 0.2, envelope: 0.8, envAmount: 1, mix: 1, sub: 0 }),
+      riff,
+      riff.bpm,
+    )
+    const g = sweep.spectrogram
+    const brightness = (f: number) => {
+      let sum = 0
+      for (let r = g.rows / 2; r < g.rows; r++) sum += g.data[f * g.rows + r]
+      return sum
+    }
+    const early = brightness(Math.round(0.06 / g.dt))
+    const later = brightness(Math.round(0.4 / g.dt))
+    expect(later).toBeGreaterThan(early * 1.5)
   })
 
   it('covers one loop of the riff in the pitch graph', () => {

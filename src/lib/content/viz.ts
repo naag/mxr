@@ -61,6 +61,19 @@ export const vizCopy = {
     harmonic: (n: number) => `${n}×`,
     hzTick: (f: number) => (f >= 1000 ? `${f / 1000}k` : `${f}`),
   },
+  spectrogram: {
+    title: 'Spectrogram',
+    sub: 'Frequencies over time: brighter color = louder',
+    subComputed: 'One note, frequencies over time: brighter color = louder',
+    canvas: 'Spectrogram',
+    cutoff: 'Cutoff over time',
+    heat: 'Quiet → loud',
+    noteOn: 'note',
+    noteEnds: 'note ends',
+    hzTick: (f: number) => (f >= 1000 ? `${f / 1000}k` : `${f}`),
+    time: (t: number) => (t === 0 ? '0' : `${t} s`),
+    ago: (t: number) => (t === 0 ? 'now' : `−${t} s`),
+  },
   envelope: {
     title: 'Envelope',
     sub: 'How brightness and volume move during one note',
@@ -196,3 +209,12 @@ export function meterReadout(o: { left: number; right: number; grDb: number }): 
 
 export const formatHz = hz
 export const formatDb = db
+
+export function spectrogramReadout(
+  o: { loudestHz: number; topHz: number } | null,
+  when: 'now' | 'note',
+): string {
+  if (!o) return 'Spectrogram: silent.'
+  const at = when === 'now' ? 'right now' : 'during the note'
+  return `Spectrogram: ${at} the loudest part is around ${hz(o.loudestHz)}; the sound reaches up to ${hz(o.topHz)}.`
+}

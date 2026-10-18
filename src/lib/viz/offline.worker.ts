@@ -20,9 +20,13 @@ export interface SnapshotResponse {
 
 /** Buffers to move (not copy) back to the main thread. */
 export function transferables(s: Snapshot): ArrayBuffer[] {
-  return [...Object.values(s.taps), s.envelope.cutoffHz, s.envelope.level, s.pitch.pitch].map(
-    (a) => a.buffer as ArrayBuffer,
-  )
+  return [
+    ...Object.values(s.taps),
+    s.envelope.cutoffHz,
+    s.envelope.level,
+    s.pitch.pitch,
+    s.spectrogram.data,
+  ].map((a) => a.buffer as ArrayBuffer)
 }
 
 interface WorkerScope {

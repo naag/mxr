@@ -16,6 +16,7 @@
   import Scope from '../lib/viz/Scope.svelte'
   import Segmented from '../lib/viz/Segmented.svelte'
   import SignalChain from '../lib/viz/SignalChain.svelte'
+  import Spectrogram from '../lib/viz/Spectrogram.svelte'
   import Spectrum from '../lib/viz/Spectrum.svelte'
 
   const keys = holdKeyHandlers(pedal)
@@ -63,6 +64,7 @@
       <LevelMeter class="flex-[2_1_260px]" />
     </div>
     <Spectrum />
+    {#if viz.detailed}<Spectrogram />{/if}
     <div class="flex flex-wrap gap-4">
       <EnvelopeGraph class="flex-[1_1_360px]" />
       <PitchGraph class="flex-[1_1_360px]" />
