@@ -106,6 +106,8 @@ export const vizCopy = {
     mix: 'Mix',
     out: 'Out',
   } satisfies Record<BlockId, string>,
+  openFlow: 'Open signal flow',
+  showInScope: (block: string) => `Show ${block} in the waveform`,
   highlightedSuffix: 'linked to the control you’re pointing at',
 }
 

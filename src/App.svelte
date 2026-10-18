@@ -4,7 +4,7 @@
   import AppFooter from './lib/components/ui/AppFooter.svelte'
   import AppHeader from './lib/components/ui/AppHeader.svelte'
   import { router } from './lib/router.svelte'
-  import { audio, pedalSettings } from './lib/state.svelte'
+  import { audio, computed, pedalSettings } from './lib/state.svelte'
   import FlowView from './views/FlowView.svelte'
   import LearnView from './views/LearnView.svelte'
   import PlayView from './views/PlayView.svelte'
@@ -16,6 +16,11 @@
   // Keep the sound engine in step with the pedal.
   $effect(() => {
     audio.setSettings(pedalSettings())
+  })
+
+  // Re-render the computed visuals whenever the sound or the riff changes.
+  $effect(() => {
+    computed.request({ settings: pedalSettings(), riff: audio.riff, bpm: audio.bpm })
   })
 </script>
 

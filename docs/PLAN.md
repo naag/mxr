@@ -624,10 +624,19 @@ snapshot (`visuals.png`) has no committed baseline yet, same as Phase 1. The pla
 signal-chain strip is a preview of Phase 6's diagram.
 
 ### Phase 6: Under the hood (signal flow)
-- [ ] Signal-flow diagram (reference §9) with stage colors, active/inactive states,
+- [x] Signal-flow diagram (reference §9) with stage colors, active/inactive states,
   animated particles, click-to-inspect, and mini scopes per tap.
-- [ ] Dry-path and stereo routing visualized per OUTPUT MODE and DRY THRU FX.
+- [x] Dry-path and stereo routing visualized per OUTPUT MODE and DRY THRU FX.
 - **Done when:** a non-expert test user can point to "where the sound gets darker".
+
+Notes: the stages, their taps and the on/off rules are data in `src/lib/flow/stages.ts`
+(`flowState()` is unit-tested); copy is in `content/flow.ts`. The DSP gained a `chorus` tap
+(after the chorus, before the compressor) so steps e and f each show their own wave. Every row has
+a live mini scope (computed when the sound is off); amp, compressor and gate show the level over
+the whole note instead of single cycles. The gate is modeled at the input (GATE SENS decides
+whether a note starts the synth), and its step says so. The filter row's caption reads "This is
+where the sound gets darker"; the hallway test with a real non-expert is still to do. On Play,
+clicking Oscillators, Filter, Amp or Out in the chain strip points the waveform at that tap.
 
 ### Phase 7: Learn mode
 - [ ] Chapter framework: goal checks, focused controls, dimming, progress (persisted),

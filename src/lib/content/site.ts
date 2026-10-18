@@ -27,7 +27,7 @@ export const views: Record<
   flow: {
     kicker: 'Under the hood',
     title: 'Follow the signal',
-    lede: 'Every step inside the pedal, from your bass to the output, with the wave at each point.',
+    lede: 'Your bass goes in at the top and the finished sound comes out at the bottom. Each block is one step inside the pedal, with the wave at that point. Select a block to look closer.',
     phase: 'Coming in Phase 6',
   },
   learn: {

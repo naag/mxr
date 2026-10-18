@@ -3,7 +3,7 @@
  * Output 0 is the stereo pedal output; output 1 carries the tap points for the visuals.
  */
 import { emptyFrame, PedalDSP } from '../dsp/pedal-dsp'
-import { PROCESSOR_NAME, type Telemetry, type ToWorklet } from '../protocol'
+import { PROCESSOR_NAME, TAP_CHANNELS, type Telemetry, type ToWorklet } from '../protocol'
 import { Sequencer } from '../sequencer'
 
 // AudioWorkletGlobalScope isn't in the DOM type library; declare the parts used here.
@@ -82,12 +82,13 @@ class PedalProcessor extends AudioWorkletProcessor {
       this.#dsp.tick(f)
       left[i] = f.left
       right[i] = f.right
-      if (taps.length >= 5) {
+      if (taps.length >= TAP_CHANNELS.length) {
         taps[0][i] = f.dry
         taps[1][i] = f.osc
         taps[2][i] = f.filter
         taps[3][i] = f.amp
-        taps[4][i] = f.fx
+        taps[4][i] = f.chorus
+        taps[5][i] = f.fx
       }
       this.#peakL = Math.max(this.#peakL, Math.abs(f.left))
       this.#peakR = Math.max(this.#peakR, Math.abs(f.right))

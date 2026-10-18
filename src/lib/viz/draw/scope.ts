@@ -82,3 +82,47 @@ export function drawScope(ctx: Ctx, size: Size, scene: ScopeScene, theme: ScopeT
   ctx.globalAlpha = 1
   ctx.setLineDash([])
 }
+
+/**
+ * Level over a whole note: a mirrored area of peak values (0–1 after `scale`), so swells,
+ * fades and compression read at a glance.
+ */
+export function drawLevel(
+  ctx: Ctx,
+  size: Size,
+  peaks: ArrayLike<number>,
+  scale: number,
+  color: string,
+  axis: string,
+) {
+  const { width: w, height: h } = size
+  const mid = h / 2
+  const amp = (h / 2) * 0.86
+  ctx.clearRect(0, 0, w, h)
+  ctx.setLineDash([])
+  ctx.globalAlpha = 1
+  ctx.strokeStyle = axis
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(0, mid)
+  ctx.lineTo(w, mid)
+  ctx.stroke()
+  const n = peaks.length
+  if (n < 2 || scale <= 1e-4) return
+  const y = (i: number) => Math.min(1, peaks[i] / scale) * amp
+  const x = (i: number) => (w * i) / (n - 1)
+  ctx.fillStyle = color
+  ctx.globalAlpha = 0.28
+  ctx.beginPath()
+  ctx.moveTo(0, mid - y(0))
+  for (let i = 1; i < n; i++) ctx.lineTo(x(i), mid - y(i))
+  for (let i = n - 1; i >= 0; i--) ctx.lineTo(x(i), mid + y(i))
+  ctx.closePath()
+  ctx.fill()
+  ctx.globalAlpha = 1
+  ctx.strokeStyle = color
+  ctx.lineWidth = 1.6
+  ctx.beginPath()
+  for (let i = 0; i < n; i++) (i ? ctx.lineTo : ctx.moveTo).call(ctx, x(i), mid - y(i))
+  ctx.stroke()
+}

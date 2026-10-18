@@ -56,6 +56,9 @@ export interface PedalFrame {
   osc: number
   filter: number
   amp: number
+  /** After the chorus, before the compressor. */
+  chorus: number
+  /** After chorus and compressor (the wet signal before MIX). */
   fx: number
   /** Control values for the envelope, pitch and LFO graphs. */
   cutoffHz: number
@@ -293,6 +296,7 @@ export class PedalDSP {
     // Effects
     const st = this.#st
     this.#chorus.process(amp, this.#chorusDepth, st)
+    const chorus = 0.5 * (st[0] + st[1])
     this.#comp.process(st[0], st[1], this.#compAmount, st)
     // Very low cutoffs and fast envelopes can leave an offset; keep it out of the output.
     const wetL = this.#dcL.next(st[0])
@@ -324,6 +328,7 @@ export class PedalDSP {
     f.osc = osc
     f.filter = filtered
     f.amp = amp
+    f.chorus = chorus
     f.fx = 0.5 * (wetL + wetR)
     f.cutoffHz = fc
     f.pitch = pitch
@@ -340,6 +345,7 @@ export function emptyFrame(): PedalFrame {
     osc: 0,
     filter: 0,
     amp: 0,
+    chorus: 0,
     fx: 0,
     cutoffHz: 0,
     pitch: 0,

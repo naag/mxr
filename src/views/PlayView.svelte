@@ -7,7 +7,7 @@
   import { views } from '../lib/content/site'
   import { vizCopy } from '../lib/content/viz'
   import type { Button } from '../lib/pedal/machine'
-  import { audio, computed, pedal, pedalSettings, viz } from '../lib/state.svelte'
+  import { pedal, viz } from '../lib/state.svelte'
   import EnvelopeGraph from '../lib/viz/EnvelopeGraph.svelte'
   import LevelMeter from '../lib/viz/LevelMeter.svelte'
   import { knobsForViz } from '../lib/viz/links'
@@ -31,11 +31,6 @@
     const button = holdKeys[e.key.toLowerCase()]
     if (button) pedal.up(button)
   }
-
-  // Re-render the computed visuals whenever the sound or the riff changes.
-  $effect(() => {
-    computed.request({ settings: pedalSettings(), riff: audio.riff, bpm: audio.bpm })
-  })
 
   const highlight = $derived(knobsForViz(viz.hovered, pedal.layer))
   const detailOptions = [

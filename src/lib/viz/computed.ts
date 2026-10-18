@@ -16,9 +16,16 @@ import { renderOffline, type NoteEvent } from '../audio/render'
 import type { Riff } from '../audio/riffs'
 import { ampAttackMs, cutoffHz, envelopeTimes, PARAM, stepIndex } from '../pedal/params'
 
-/** Tap points the scope and spectrum can show. `out` is the pedal output (L+R)/2. */
+/** Every tap point in the chain. `out` is the pedal output (L+R)/2. */
+export type TapId = 'dry' | 'osc' | 'filter' | 'amp' | 'chorus' | 'fx' | 'out'
+export const TAP_IDS: readonly TapId[] = ['dry', 'osc', 'filter', 'amp', 'chorus', 'fx', 'out']
+
+/** Tap points the Play view's scope can show. */
 export type ScopeTap = 'osc' | 'filter' | 'amp' | 'out'
 export const SCOPE_TAPS: readonly ScopeTap[] = ['osc', 'filter', 'amp', 'out']
+
+/** Points in the long (whole-note) view of each tap. */
+export const LONG_POINTS = 480
 
 /** The note the computed views play: A1, 55 Hz, as in the mockup. */
 export const PREVIEW_MIDI = 33
@@ -73,7 +80,9 @@ export interface Snapshot {
   /** Time of the snapshot in the preview render. */
   at: number
   /** The newest WINDOW samples of each tap at the snapshot. */
-  taps: Record<ScopeTap, Float32Array>
+  taps: Record<TapId, Float32Array>
+  /** Peak level of each tap across the whole preview note (LONG_POINTS points). */
+  long: Record<TapId, Float32Array>
   cutoffNow: number
   envelope: EnvelopeCurve
   pitch: PitchCurve
@@ -113,6 +122,25 @@ function decimate(
       acc = mode === 'peak' ? Math.max(acc, Math.abs(v)) : acc + v
     }
     out[i] = mode === 'peak' ? acc : acc / factor
+  }
+  return out
+}
+
+/**
+ * `points` peak levels across `x`, each over a window of at least `minWindow` samples, so the
+ * level follows the note rather than every cycle of the wave.
+ */
+export function peakEnvelope(x: Float32Array, points: number, minWindow: number): Float32Array {
+  const out = new Float32Array(points)
+  const step = x.length / points
+  const half = Math.max(step, minWindow) / 2
+  for (let i = 0; i < points; i++) {
+    const c = (i + 0.5) * step
+    const from = Math.max(0, Math.floor(c - half))
+    const to = Math.min(x.length, Math.ceil(c + half))
+    let p = 0
+    for (let j = from; j < to; j++) p = Math.max(p, Math.abs(x[j]))
+    out[i] = p
   }
   return out
 }
@@ -183,7 +211,15 @@ export function computeSnapshot(settings: PedalSettings, riff: Riff, bpm: number
     sampleRate: sr,
     midi: PREVIEW_MIDI,
     at,
-    taps: { osc: window(r.osc), filter: window(r.filter), amp: window(r.amp), out: window(out) },
+    taps: Object.fromEntries(
+      TAP_IDS.map((id) => [id, window(id === 'out' ? out : r[id])]),
+    ) as Record<TapId, Float32Array>,
+    long: Object.fromEntries(
+      TAP_IDS.map((id) => {
+        const x = (id === 'out' ? out : r[id]).subarray(0, graph)
+        return [id, peakEnvelope(x, LONG_POINTS, Math.round(0.02 * sr))]
+      }),
+    ) as Record<TapId, Float32Array>,
     cutoffNow: r.cutoffHz[end - 1],
     envelope: {
       dt: 1 / CONTROL_RATE,

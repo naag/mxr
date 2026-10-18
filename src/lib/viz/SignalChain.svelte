@@ -2,8 +2,17 @@
   import { stageColors } from '../content/controls'
   import { vizCopy } from '../content/viz'
   import type { Stage } from '../pedal/params'
-  import { pedal } from '../state.svelte'
+  import { pedal, viz } from '../state.svelte'
+  import type { ScopeTap } from './computed'
   import { BLOCKS, linksFor, type BlockId } from './links'
+
+  /** Blocks you can click to look at in the waveform. */
+  const tapOf: Partial<Record<BlockId, ScopeTap>> = {
+    osc: 'osc',
+    filter: 'filter',
+    amp: 'amp',
+    out: 'out',
+  }
 
   const stageOf: Record<BlockId, Stage> = {
     input: 'input',
@@ -29,20 +38,37 @@
   <ol aria-label={vizCopy.chainLabel} class="m-0 flex list-none flex-wrap items-center gap-1.5 p-0">
     {#each BLOCKS as b, i (b)}
       {@const on = lit.includes(b)}
+      {@const tap = tapOf[b]}
+      {@const cls = [
+        'inline-flex items-center gap-[7px] rounded-full border px-[11px] py-1.5 text-[12.5px] font-medium transition-colors duration-150',
+        on
+          ? 'border-[#2f7f86] bg-[rgba(67,198,207,0.12)] text-text'
+          : 'border-[#232a33] text-muted',
+        inactive && !['input', 'mix', 'out'].includes(b) ? 'opacity-50' : '',
+      ]}
       <li class="flex items-center gap-1.5">
-        <span
-          data-block={b}
-          data-highlighted={on}
-          class={[
-            'inline-flex items-center gap-[7px] rounded-full border px-[11px] py-1.5 text-[12.5px] font-medium transition-colors duration-150',
-            on
-              ? 'border-[#2f7f86] bg-[rgba(67,198,207,0.12)] text-text'
-              : 'border-[#232a33] text-muted',
-            inactive && !['input', 'mix', 'out'].includes(b) ? 'opacity-50' : '',
-          ]}
-          ><span class="size-[7px] rounded-full" style:background={stageColors[stageOf[b]]}
-          ></span>{vizCopy.blocks[b]}</span
-        >
+        {#if tap}
+          <button
+            type="button"
+            data-block={b}
+            data-highlighted={on}
+            aria-pressed={viz.tap === tap}
+            title={vizCopy.showInScope(vizCopy.blocks[b])}
+            onclick={() => viz.setTap(tap)}
+            class={[
+              ...cls,
+              'cursor-pointer hover:border-[#3a4450]',
+              viz.tap === tap ? 'ring-1 ring-[#3a4450]' : '',
+            ]}
+            ><span class="size-[7px] rounded-full" style:background={stageColors[stageOf[b]]}
+            ></span>{vizCopy.blocks[b]}</button
+          >
+        {:else}
+          <span data-block={b} data-highlighted={on} class={cls}
+            ><span class="size-[7px] rounded-full" style:background={stageColors[stageOf[b]]}
+            ></span>{vizCopy.blocks[b]}</span
+          >
+        {/if}
         {#if i < BLOCKS.length - 1}
           <svg
             width="14"
@@ -59,4 +85,9 @@
       </li>
     {/each}
   </ol>
+  <a
+    href="#/flow"
+    class="ml-auto px-1 py-1.5 text-[13px] font-medium text-[#7fd8df] hover:text-[#b5ecf0]"
+    >{vizCopy.openFlow} →</a
+  >
 </div>

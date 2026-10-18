@@ -8,6 +8,7 @@ import { harmonicLevels, magnitudeSpectrum } from './analysis'
 import {
   computeSnapshot,
   envelopeSeconds,
+  peakEnvelope,
   oscLayers,
   PREVIEW_MIDI,
   repeatHz,
@@ -140,4 +141,19 @@ describe('every parameter shows up in its linked visuals', () => {
       expect(biggest).toBeGreaterThan(0.01)
     })
   }
+})
+
+describe('peakEnvelope', () => {
+  it('follows the level, not the cycles of the wave', () => {
+    const sr = 48000
+    // A 55 Hz sine that fades out linearly over one second.
+    const x = Float32Array.from(
+      { length: sr },
+      (_, i) => (1 - i / sr) * Math.sin((2 * Math.PI * 55 * i) / sr),
+    )
+    const env = peakEnvelope(x, 100, Math.round(0.02 * sr))
+    for (let i = 1; i < env.length; i++) expect(env[i]).toBeLessThanOrEqual(env[i - 1] + 1e-6)
+    expect(env[0]).toBeGreaterThan(0.95)
+    expect(env[99]).toBeLessThan(0.05)
+  })
 })
