@@ -100,6 +100,8 @@ class PedalProcessor extends AudioWorkletProcessor {
         cutoffHz: f.cutoffHz,
         pitch: f.pitch,
         gainReductionDb: f.gainReductionDb,
+        noteAge: this.#dsp.noteAge,
+        level: f.level,
         peakLeft: this.#peakL,
         peakRight: this.#peakR,
         playing: this.#seq.playing,

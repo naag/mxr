@@ -35,6 +35,9 @@ export const VOICE_INTERVALS = [7, 12] as const
 /** ASSUMPTION: how long the pitch detector needs before a note sounds, per TRACKING mode. */
 export const TRACKING_DELAY_MS = [20, 12, 6] as const
 
+/** Notes softer than this don't trigger the synth (ASSUMPTION on the exact curve). */
+export const gateThreshold = (gateSens: number) => 0.3 * (1 - gateSens)
+
 /** Follower level of a medium pluck, used to scale the synth to about unity. */
 const LEVEL_REFERENCE = 0.35
 
@@ -58,6 +61,34 @@ export interface PedalFrame {
   cutoffHz: number
   pitch: number
   gainReductionDb: number
+  /** Gain the amp stage applies right now (string level × AMP ENV fade-in), 0–1.5. */
+  level: number
+}
+
+export interface OscGains {
+  main: number
+  /** Per harmony voice. */
+  voice: number
+  sub: number
+  noise: number
+}
+
+/**
+ * How loud each oscillator is in the mix that feeds the filter. SUB MIX and NOISE MIX are
+ * equal-power crossfades; the harmony voices sit at half level, scaled by VOICE MIX.
+ */
+export function oscGains(values: Patch['values'], voiceOn: boolean): OscGains {
+  const vm = voiceOn ? values.voiceMix : 0
+  const norm = 1 / (1 + 0.5 * vm)
+  const subAngle = (values.sub * Math.PI) / 2
+  const noiseAngle = (values.noise * Math.PI) / 2
+  const tone = Math.cos(subAngle) * Math.cos(noiseAngle)
+  return {
+    main: tone * norm,
+    voice: tone * 0.5 * vm * norm,
+    sub: Math.sin(subAngle) * Math.cos(noiseAngle),
+    noise: Math.sin(noiseAngle),
+  }
 }
 
 /** One-pole smoother so knob moves don't click. */
@@ -110,10 +141,7 @@ export class PedalDSP {
 
   // Settings, resolved to physical units.
   #shape: Shape = 'saw'
-  #voiceOn = false
-  #voiceMix = 0.5
-  #sub = 0
-  #noiseMix = 0
+  #gains: OscGains = { main: 1, voice: 0, sub: 0, noise: 0 }
   #envTimes: { attackMs: number; decayMs: number } | null = null
   #envOct = 0
   #ampAttack = 1
@@ -135,6 +163,8 @@ export class PedalDSP {
   #pending: { midi: number; velocity: number; samplesLeft: number } | null = null
   #gate = 0
   #level = 0
+  /** Samples since the synth last started a note, or −1 before the first. */
+  #age = -1
   readonly #st: [number, number] = [0, 0]
 
   constructor(sampleRate: number, seed = 1) {
@@ -163,13 +193,15 @@ export class PedalDSP {
     return this.#sr
   }
 
+  /** Seconds since the synth started the current note (after tracking), or null. */
+  get noteAge(): number | null {
+    return this.#age < 0 ? null : this.#age / this.#sr
+  }
+
   set({ patch, globals, engaged, frozen }: PedalSettings) {
     const v = patch.values
     this.#shape = patch.shape
-    this.#voiceOn = patch.voiceOn
-    this.#voiceMix = v.voiceMix
-    this.#sub = v.sub
-    this.#noiseMix = v.noise
+    this.#gains = oscGains(v, patch.voiceOn)
     this.#envTimes = envelopeTimes(v.envelope)
     this.#envOct = envAmountOctaves(v.envAmount)
     this.#ampAttack = ampAttackMs(v.ampEnv)
@@ -181,8 +213,7 @@ export class PedalDSP {
     this.#compAmount = v.comp
     this.#dryThru = stepIndex(PARAM.dryThru, v.dryThru) === 1
     this.#outMode = stepIndex(PARAM.outMode, globals.outMode)
-    // Higher sensitivity lets softer notes through (ASSUMPTION on the exact curve).
-    this.#gateThreshold = 0.3 * (1 - globals.gateSens)
+    this.#gateThreshold = gateThreshold(globals.gateSens)
     this.#trackingDelay = TRACKING_DELAY_MS[stepIndex(PARAM.tracking, globals.tracking)]
     this.#engaged = engaged
     this.#frozen = frozen
@@ -218,6 +249,7 @@ export class PedalDSP {
     if (this.#envTimes) this.#filterEnv.trigger(this.#envTimes.attackMs, this.#envTimes.decayMs)
     this.#fadeIn.trigger(this.#ampAttack)
     this.#gate = 1
+    this.#age = 0
   }
 
   /** Renders one sample into `f` (reused to avoid allocation in the audio thread). */
@@ -227,6 +259,7 @@ export class PedalDSP {
       this.#pending = null
     }
 
+    if (this.#age >= 0) this.#age++
     const dry = this.#bass.next()
     if (!this.#frozen) this.#level = this.#follower.next(dry)
 
@@ -235,19 +268,15 @@ export class PedalDSP {
     const hz = midiToHz(pitch)
     this.#main.setFrequency(hz)
     const sub = subOctave(this.#main)
-    let tone = this.#main.next(this.#shape)
-    if (this.#voiceOn && this.#voiceMix > 0) {
-      let voices = 0
+    const g = this.#gains
+    let osc = g.main * this.#main.next(this.#shape) + g.sub * sub
+    if (g.voice > 0) {
       for (let i = 0; i < this.#voices.length; i++) {
         this.#voices[i].setFrequency(hz * 2 ** (VOICE_INTERVALS[i] / 12))
-        voices += this.#voices[i].next(this.#shape)
+        osc += g.voice * this.#voices[i].next(this.#shape)
       }
-      tone = (tone + 0.5 * this.#voiceMix * voices) / (1 + 0.5 * this.#voiceMix)
     }
-    const subAngle = (this.#sub * Math.PI) / 2
-    let osc = tone * Math.cos(subAngle) + sub * Math.sin(subAngle)
-    const noiseAngle = (this.#noiseMix * Math.PI) / 2
-    osc = osc * Math.cos(noiseAngle) + this.#noise.next() * Math.sin(noiseAngle)
+    osc += g.noise * this.#noise.next()
 
     // Filter
     const envOct = this.#envTimes ? this.#envOct * this.#filterEnv.next() : 0
@@ -258,7 +287,8 @@ export class PedalDSP {
 
     // Amp: follows the string's level, with the AMP ENV fade-in; silent until a note starts.
     const level = Math.min(1.5, this.#level / LEVEL_REFERENCE)
-    const amp = filtered * this.#fadeIn.next() * level * this.#gate
+    const ampGain = this.#fadeIn.next() * level * this.#gate
+    const amp = filtered * ampGain
 
     // Effects
     const st = this.#st
@@ -298,6 +328,7 @@ export class PedalDSP {
     f.cutoffHz = fc
     f.pitch = pitch
     f.gainReductionDb = this.#comp.reductionDb
+    f.level = ampGain
   }
 }
 
@@ -313,5 +344,6 @@ export function emptyFrame(): PedalFrame {
     cutoffHz: 0,
     pitch: 0,
     gainReductionDb: 0,
+    level: 0,
   }
 }

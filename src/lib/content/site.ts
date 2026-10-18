@@ -21,7 +21,7 @@ export const views: Record<
   play: {
     kicker: 'Play',
     title: 'Turn a knob, hear and see what it does',
-    lede: 'Press Start sound, then play a riff or the fretboard at the bottom and turn the knobs. The live waveform and spectrum come next.',
+    lede: 'Press Start sound, play a riff or the fretboard at the bottom, and turn the knobs. Point at a knob to see where it acts; point at a visual to see which knobs change it.',
     phase: 'Visuals in Phase 5',
   },
   flow: {
