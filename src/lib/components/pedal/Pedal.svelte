@@ -14,7 +14,8 @@
     VOICE_BUTTON,
     type KnobId,
   } from '../../pedal/layout'
-  import { describe, stepIndex } from '../../pedal/params'
+  import { describe, stepIndex, type ParamId } from '../../pedal/params'
+  import { toeChanges, toeValue } from '../../pedal/presets'
   import type { ControlId, PedalStore } from '../../pedal/pedal.svelte'
   import { makeDefIds, url } from './defs'
   import Footswitch from './Footswitch.svelte'
@@ -57,9 +58,21 @@
     KNOBS.map((k) => {
       const p = pedal.paramFor(k.id)
       const value = pedal.knobValue(k.id)
-      return { ...k, p, value }
+      return { ...k, p, value, morph: morphFor(p.id) }
     }),
   )
+
+  /** Expression pedal plugged in and this parameter has a toe state: show its range. */
+  function morphFor(id: ParamId) {
+    if (!s.expression.connected) return null
+    const changed = toeChanges(s.current).find((c) => c === id)
+    if (!changed) return null
+    return {
+      heel: s.current.values[changed],
+      toe: toeValue(s.current, changed),
+      now: pedal.sound.values[changed],
+    }
+  }
 
   /** Small legends around SHAPE-layer controls, like the manual's diagram. */
   const legends = $derived(
@@ -301,6 +314,7 @@
         steps={k.p.steps?.length}
         ringColor={stageColors[k.p.stage]}
         highlighted={highlight.includes(k.id) || (focus.includes(k.id) && dim(k.id) === 1)}
+        morph={k.morph}
         {ids}
         onchange={(v) => pedal.turn(k.id, v)}
         onreset={() => pedal.resetKnob(k.id)}

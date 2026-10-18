@@ -47,8 +47,10 @@
   })
 </script>
 
+<!-- Fixed minimum height: the card must not resize as focus moves, or the controls below
+     jump between pointer down and up and clicks land on the wrong element. -->
 <div
-  class="flex w-full flex-col gap-1.5 rounded-2xl border border-[#232a33] bg-surface px-4 py-3.5"
+  class="flex min-h-36 w-full flex-col gap-1.5 rounded-2xl border border-[#232a33] bg-surface px-4 py-3.5"
   data-testid="control-caption"
   aria-live="polite"
 >
@@ -60,7 +62,7 @@
   </div>
   <p class="m-0 text-sm leading-relaxed text-[#b7c0c9]">{card.text}</p>
   {#if card.left && card.right}
-    <div class="flex justify-between gap-3 text-xs text-subtle">
+    <div class="mt-auto flex justify-between gap-3 text-xs text-subtle">
       <span>← {card.left}</span><span>{card.right} →</span>
     </div>
   {/if}

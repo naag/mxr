@@ -77,6 +77,29 @@ test('Simple ⇄ Detailed changes the readouts and is remembered', async ({ page
   )
 })
 
+test('Detailed mode adds a spectrogram that follows the cutoff', async ({ page }) => {
+  await expect(panel(page, 'spectrogram')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Detailed' }).click()
+  const spec = panel(page, 'spectrogram')
+  await expect(readout(page, 'spectrogram')).toContainText('during the note the loudest part')
+  const top = async () => {
+    const text = (await readout(page, 'spectrogram').textContent()) ?? ''
+    const m = text.match(/up to ([\d.]+) (k?)Hz/)
+    return m ? Number(m[1]) * (m[2] ? 1000 : 1) : NaN
+  }
+  // Synth only, so the clean bass doesn't hide the filter.
+  await page.getByRole('slider', { name: 'Mix', exact: true }).focus()
+  await page.keyboard.press('End')
+  await expect.poll(top).toBeGreaterThan(0)
+  const before = await top()
+  const cutoff = page.getByRole('slider', { name: 'Cutoff' })
+  await cutoff.focus()
+  await page.keyboard.press('Home')
+  await expect.poll(top).toBeLessThan(before)
+  // The focused CUTOFF knob lights up its linked visuals, the spectrogram included.
+  await expect(spec).toHaveAttribute('data-highlighted', 'true')
+})
+
 test('the scope can look at each tap point and split the oscillators', async ({ page }) => {
   const taps = page.getByRole('group', { name: 'Where to look' })
   await taps.getByRole('button', { name: 'Amp' }).click()

@@ -17,5 +17,5 @@ export const computed = new ComputedViz()
 /** The settings the sound engine needs from the pedal. */
 export function pedalSettings() {
   const s = pedal.state
-  return { patch: s.current, globals: s.globals, engaged: s.engaged, frozen: s.frozen }
+  return { patch: pedal.sound, globals: s.globals, engaged: s.engaged, frozen: s.frozen }
 }

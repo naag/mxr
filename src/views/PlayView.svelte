@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ExpressionPedal from '../lib/components/expression/ExpressionPedal.svelte'
   import { holdKeyHandlers } from '../lib/components/pedal/hold-keys'
   import ControlCaption from '../lib/components/pedal/ControlCaption.svelte'
   import LayerToggle from '../lib/components/pedal/LayerToggle.svelte'
@@ -10,14 +11,59 @@
   import { pedal, viz } from '../lib/state.svelte'
   import EnvelopeGraph from '../lib/viz/EnvelopeGraph.svelte'
   import LevelMeter from '../lib/viz/LevelMeter.svelte'
-  import { knobsForViz } from '../lib/viz/links'
+  import { knobsForViz, type VizId } from '../lib/viz/links'
+  import { onMount } from 'svelte'
+  import { prefersReducedMotion } from 'svelte/motion'
+  import { MediaQuery } from 'svelte/reactivity'
   import PitchGraph from '../lib/viz/PitchGraph.svelte'
   import Scope from '../lib/viz/Scope.svelte'
   import Segmented from '../lib/viz/Segmented.svelte'
   import SignalChain from '../lib/viz/SignalChain.svelte'
+  import Spectrogram from '../lib/viz/Spectrogram.svelte'
   import Spectrum from '../lib/viz/Spectrum.svelte'
 
   const keys = holdKeyHandlers(pedal)
+
+  // Performance (PLAN §5.6): paint the pedal first, mount the visuals in the next task, so
+  // the first load isn't one long main-thread block.
+  let visualsReady = $state(false)
+  onMount(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const frame = requestAnimationFrame(() => {
+      timer = setTimeout(() => (visualsReady = true))
+    })
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(timer)
+    }
+  })
+
+  // Phones (PLAN §2.4): the visuals become a swipeable strip with tabs.
+  const phone = new MediaQuery('max-width: 767px')
+  const slide = 'max-md:w-full max-md:flex-none max-md:snap-start'
+  const tabs = $derived<VizId[]>(
+    viz.detailed
+      ? ['scope', 'meter', 'spectrum', 'spectrogram', 'envelope', 'pitch']
+      : ['scope', 'meter', 'spectrum', 'envelope', 'pitch'],
+  )
+  let strip: HTMLDivElement | undefined = $state()
+  let shown = $state<VizId>('scope')
+
+  function show(id: VizId) {
+    const panel = strip?.querySelector<HTMLElement>(`[data-viz="${id}"]`)
+    if (!strip || !panel) return
+    strip.scrollTo({
+      left: panel.offsetLeft - strip.offsetLeft,
+      behavior: prefersReducedMotion.current ? 'instant' : 'smooth',
+    })
+    shown = id
+  }
+
+  function onscroll() {
+    if (!strip || !phone.current) return
+    const i = Math.round(strip.scrollLeft / Math.max(1, strip.clientWidth))
+    shown = tabs[Math.min(tabs.length - 1, Math.max(0, i))]
+  }
 
   const highlight = $derived(knobsForViz(viz.hovered, pedal.layer))
   const detailOptions = [
@@ -38,6 +84,7 @@
     </div>
     <LayerToggle {pedal} />
     <ControlCaption {pedal} />
+    <ExpressionPedal {pedal} />
     <ShareButton {pedal} />
   </div>
   <div class="flex min-w-0 flex-[999_1_560px] flex-col gap-4">
@@ -56,14 +103,48 @@
       </div>
     </div>
     <SignalChain />
-    <div class="flex flex-wrap gap-4">
-      <Scope class="flex-[3_1_460px]" />
-      <LevelMeter class="flex-[2_1_260px]" />
-    </div>
-    <Spectrum />
-    <div class="flex flex-wrap gap-4">
-      <EnvelopeGraph class="flex-[1_1_360px]" />
-      <PitchGraph class="flex-[1_1_360px]" />
+    {#if phone.current}
+      <div
+        role="group"
+        aria-label={vizCopy.tabsLabel}
+        class="-mx-4 flex gap-1 overflow-x-auto border-b border-line px-4"
+        data-testid="viz-tabs"
+      >
+        {#each tabs as id (id)}
+          <button
+            type="button"
+            aria-pressed={shown === id}
+            onclick={() => show(id)}
+            class={[
+              'min-h-11 shrink-0 cursor-pointer border-b-2 px-3 text-[13.5px]',
+              shown === id
+                ? 'border-stage-filter font-semibold text-text'
+                : 'border-transparent text-subtle',
+            ]}>{vizCopy.tabs[id]}</button
+          >
+        {/each}
+      </div>
+    {/if}
+    <div
+      bind:this={strip}
+      {onscroll}
+      class="relative flex flex-col gap-4 max-md:-mx-4 max-md:snap-x max-md:snap-mandatory max-md:[scroll-padding-inline:16px] max-md:flex-row max-md:overflow-x-auto max-md:px-4"
+      data-testid="viz-strip"
+    >
+      {#if visualsReady}
+        <div class="flex flex-wrap gap-4 max-md:contents">
+          <Scope class="flex-[3_1_460px] {slide}" />
+          <LevelMeter class="flex-[2_1_260px] {slide}" />
+        </div>
+        <Spectrum class={slide} />
+        {#if viz.detailed}<Spectrogram class={slide} />{/if}
+        <div class="flex flex-wrap gap-4 max-md:contents">
+          <EnvelopeGraph class="flex-[1_1_360px] {slide}" />
+          <PitchGraph class="flex-[1_1_360px] {slide}" />
+        </div>
+      {:else}
+        <div class="min-h-[1100px] max-md:min-h-[420px]" aria-hidden="true"></div>
+      {/if}
     </div>
   </div>
 </div>

@@ -64,3 +64,13 @@ now)`); parameters and their mappings in `params.ts`; factory presets in `preset
   per chapter that must stay finishable. Copy links the glossary with `[[term|words]]`.
 - The signal-flow model is `src/lib/viz/flow.ts`; the Under-the-hood view and Learn chapter 12
   share it.
+- Expression pedal: a patch's `toe` holds only the parameters that differ from the heel;
+  `pedal.sound` (the machine's `effectivePatch`) is what the audio and visuals get, while knobs
+  show the state being edited. Preset recipe cards live in `src/lib/content/presets.ts`.
+- Global keyboard shortcuts are the pure `src/lib/shortcuts.ts`; check new keys against the
+  note keys of the Keys source.
+- Only Play is in the initial bundle; other views are lazy-loaded in `App.svelte`. `npm run size`
+  (after a build) enforces the 200 KB gzip budget. `scripts/screenshots.mjs` regenerates the
+  README screenshots, OG image and touch icon from a running preview.
+- Mobile E2E: emulation widens `clientWidth` to fit wide content, so check overflow against
+  `page.viewportSize()`.

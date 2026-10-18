@@ -20,7 +20,10 @@ describe('parseHash', () => {
     expect(parseHash('#/flow/filter')).toEqual({ name: 'flow', item: 'filter' })
     expect(parseHash('#/reference/low-pass')).toEqual({ name: 'reference', item: 'low-pass' })
     expect(parseHash('#/reference/<script>')).toEqual({ name: 'reference' })
-    expect(parseHash('#/presets/x')).toEqual({ name: 'presets' })
+    expect(parseHash('#/presets/r2')).toEqual({ name: 'presets', item: 'r2' })
+    expect(parseHash('#/presets/R2!')).toEqual({ name: 'presets' })
+    expect(parseHash('#/about')).toEqual({ name: 'about' })
+    expect(parseHash('#/play/x')).toEqual({ name: 'play' })
   })
 
   it('reads the Learn chapter', () => {

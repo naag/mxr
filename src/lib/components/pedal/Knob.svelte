@@ -31,6 +31,8 @@
     onactive?: (active: boolean) => void
     /** Lit by linked highlighting (pointing at a visual this knob changes). */
     highlighted?: boolean
+    /** Expression morph: the heel and toe values, and the value you hear now. */
+    morph?: { heel: number; toe: number; now: number } | null
   }
 
   let {
@@ -47,6 +49,7 @@
     onreset,
     onactive,
     highlighted = false,
+    morph = null,
   }: Props = $props()
 
   let dragging = $state(false)
@@ -157,6 +160,29 @@
       stroke-linecap="round"
     />
   </g>
+  {#if morph}
+    {@const a = angleFor(Math.min(morph.heel, morph.toe))}
+    {@const b = angleFor(Math.max(morph.heel, morph.toe))}
+    {@const now = angleFor(morph.now)}
+    <g class="morph" aria-hidden="true" data-morph>
+      <path
+        d={arcPath(112, a, b)}
+        fill="none"
+        stroke="var(--color-stage-mod)"
+        stroke-opacity="0.55"
+        stroke-width="6"
+        stroke-linecap="round"
+      />
+      <circle
+        cx={112 * Math.sin((now * Math.PI) / 180)}
+        cy={-112 * Math.cos((now * Math.PI) / 180)}
+        r="8"
+        fill="var(--color-stage-mod)"
+        stroke="#0d1014"
+        stroke-width="2"
+      />
+    </g>
+  {/if}
   <ellipse
     cx="9"
     cy="16"

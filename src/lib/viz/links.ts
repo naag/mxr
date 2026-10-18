@@ -8,8 +8,15 @@ import { KNOBS } from '../pedal/layout'
 import { paramAt, type Layer, type ParamId } from '../pedal/params'
 import type { ControlId } from '../pedal/pedal.svelte'
 
-export type VizId = 'scope' | 'spectrum' | 'envelope' | 'pitch' | 'meter'
-export const VIZ_IDS: readonly VizId[] = ['scope', 'spectrum', 'envelope', 'pitch', 'meter']
+export type VizId = 'scope' | 'spectrum' | 'envelope' | 'pitch' | 'meter' | 'spectrogram'
+export const VIZ_IDS: readonly VizId[] = [
+  'scope',
+  'spectrum',
+  'envelope',
+  'pitch',
+  'meter',
+  'spectrogram',
+]
 
 /** Blocks of the signal chain strip, in signal order (docs/pedal-reference.md §9). */
 export type BlockId = 'input' | 'tracking' | 'osc' | 'filter' | 'amp' | 'fx' | 'dyn' | 'mix' | 'out'
@@ -34,15 +41,19 @@ interface Link {
 
 export const PARAM_LINKS: Record<ParamId, Link> = {
   mix: { viz: ['scope', 'meter'], blocks: ['mix'] },
-  cutoff: { viz: ['spectrum', 'scope', 'envelope'], blocks: ['filter'], curve: true },
-  envelope: { viz: ['envelope', 'spectrum'], blocks: ['filter'], curve: true },
+  cutoff: {
+    viz: ['spectrum', 'scope', 'envelope', 'spectrogram'],
+    blocks: ['filter'],
+    curve: true,
+  },
+  envelope: { viz: ['envelope', 'spectrum', 'spectrogram'], blocks: ['filter'], curve: true },
   sub: { viz: ['scope', 'spectrum'], blocks: ['osc'] },
-  resonance: { viz: ['spectrum', 'scope'], blocks: ['filter'], curve: true },
+  resonance: { viz: ['spectrum', 'scope', 'spectrogram'], blocks: ['filter'], curve: true },
   mod: { viz: ['envelope', 'scope'], blocks: ['fx', 'filter'] },
   voiceMix: { viz: ['scope', 'spectrum'], blocks: ['osc'] },
-  envAmount: { viz: ['envelope', 'spectrum'], blocks: ['filter'], curve: true },
+  envAmount: { viz: ['envelope', 'spectrum', 'spectrogram'], blocks: ['filter'], curve: true },
   ampEnv: { viz: ['envelope', 'scope'], blocks: ['amp'] },
-  noise: { viz: ['scope', 'spectrum'], blocks: ['osc'] },
+  noise: { viz: ['scope', 'spectrum', 'spectrogram'], blocks: ['osc'] },
   glide: { viz: ['pitch'], blocks: ['osc'] },
   modBlend: { viz: ['envelope', 'scope'], blocks: ['fx', 'filter'] },
   comp: { viz: ['meter'], blocks: ['dyn'] },

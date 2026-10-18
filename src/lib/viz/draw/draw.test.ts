@@ -5,6 +5,7 @@ import type { Ctx } from './canvas'
 import { envelopeGeometry } from './envelope'
 import { pitchGeometry, pitchRange } from './pitch'
 import { drawScope, type ScopeScene } from './scope'
+import { drawSpectrogram, spectrogramLayout, type SpectrogramCtx } from './spectrogram'
 import { drawSpectrum, spectrumLayout, type SpectrumScene } from './spectrum'
 
 /** Records every call and property write, like a canvas that only takes notes. */
@@ -198,5 +199,52 @@ describe('pitchGeometry', () => {
     expect(g.bars[0].dim).toBe(true)
     expect(g.y(36)).toBeLessThan(g.y(33))
     expect(g.grid.find((l) => l.label === 'A1')?.natural).toBe(true)
+  })
+})
+
+describe('drawSpectrogram', () => {
+  const theme = { grid: 'g', text: 't', cutoff: 'c', marker: 'm' }
+  const labels = { hz: (f: number) => `${f}`, time: (t: number) => `${t}s` }
+
+  it('puts low frequencies at the bottom of the plot', () => {
+    const L = spectrogramLayout(size)
+    expect(L.y(20)).toBeCloseTo(L.bottom)
+    expect(L.y(12000)).toBeCloseTo(0)
+    expect(L.x(1)).toBe(400)
+  })
+
+  it('blits the heat map and draws ticks, markers and the cutoff line', () => {
+    const r = recorder()
+    const image = {} as CanvasImageSource
+    drawSpectrogram(
+      r.ctx as SpectrogramCtx,
+      size,
+      {
+        image,
+        seconds: 1,
+        scrolling: false,
+        cutoff: [200, 400, 800],
+        markers: [{ at: 0.1, label: 'note' }],
+        labels,
+      },
+      theme,
+    )
+    expect(r.calls.find((c) => c.op === 'drawImage')?.args[0]).toBe(image)
+    const texts = r.calls.filter((c) => c.op === 'fillText').map((c) => c.args[0])
+    expect(texts).toEqual(expect.arrayContaining(['100', '1000', '0s', '0.5s', '1s', 'note']))
+    expect(r.calls.some((c) => c.op === 'set:strokeStyle' && c.args[0] === 'c')).toBe(true)
+  })
+
+  it('counts time back from now while scrolling, and skips a missing image', () => {
+    const r = recorder()
+    drawSpectrogram(
+      r.ctx as SpectrogramCtx,
+      size,
+      { image: null, seconds: 4, scrolling: true, labels: { ...labels, time: (t) => `-${t}` } },
+      theme,
+    )
+    expect(r.count('drawImage')).toBe(0)
+    const texts = r.calls.filter((c) => c.op === 'fillText').map((c) => c.args[0])
+    expect(texts).toEqual(expect.arrayContaining(['-0', '-4']))
   })
 })

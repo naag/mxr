@@ -1,7 +1,7 @@
 /** Copy for the visuals: titles, legends and the live text readouts (PLAN §3). */
 import { noteName } from '../audio/notes'
 import type { ScopeTap } from '../viz/computed'
-import type { BlockId } from '../viz/links'
+import type { BlockId, VizId } from '../viz/links'
 
 const hz = (f: number) =>
   f >= 1000 ? `${(f / 1000).toFixed(f >= 10000 ? 0 : 1)} kHz` : `${Math.round(f)} Hz`
@@ -9,6 +9,15 @@ const ms = (t: number) => (t >= 1 ? `${t.toFixed(2)} s` : `${Math.round(t * 1000
 const db = (v: number) => `${v < 0 ? '−' : v > 0 ? '+' : ''}${Math.abs(v).toFixed(0)} dB`
 
 export const vizCopy = {
+  tabsLabel: 'Visuals',
+  tabs: {
+    scope: 'Wave',
+    meter: 'Levels',
+    spectrum: 'Spectrum',
+    spectrogram: 'Spectrogram',
+    envelope: 'Envelope',
+    pitch: 'Pitch',
+  } satisfies Record<VizId, string>,
   live: 'Live',
   computed: 'Computed',
   computedHint: 'Sound is off: these show a computed A1 note and one loop of the riff.',
@@ -60,6 +69,19 @@ export const vizCopy = {
     cutoff: (f: number, detailed: boolean) => (detailed ? `cutoff right now · ${hz(f)}` : 'cutoff'),
     harmonic: (n: number) => `${n}×`,
     hzTick: (f: number) => (f >= 1000 ? `${f / 1000}k` : `${f}`),
+  },
+  spectrogram: {
+    title: 'Spectrogram',
+    sub: 'Frequencies over time: brighter color = louder',
+    subComputed: 'One note, frequencies over time: brighter color = louder',
+    canvas: 'Spectrogram',
+    cutoff: 'Cutoff over time',
+    heat: 'Quiet → loud',
+    noteOn: 'note',
+    noteEnds: 'note ends',
+    hzTick: (f: number) => (f >= 1000 ? `${f / 1000}k` : `${f}`),
+    time: (t: number) => (t === 0 ? '0' : `${t} s`),
+    ago: (t: number) => (t === 0 ? 'now' : `−${t} s`),
   },
   envelope: {
     title: 'Envelope',
@@ -196,3 +218,12 @@ export function meterReadout(o: { left: number; right: number; grDb: number }): 
 
 export const formatHz = hz
 export const formatDb = db
+
+export function spectrogramReadout(
+  o: { loudestHz: number; topHz: number } | null,
+  when: 'now' | 'note',
+): string {
+  if (!o) return 'Spectrogram: silent.'
+  const at = when === 'now' ? 'right now' : 'during the note'
+  return `Spectrogram: ${at} the loudest part is around ${hz(o.loudestHz)}; the sound reaches up to ${hz(o.topHz)}.`
+}

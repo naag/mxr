@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { learnCopy, presetRecipes } from '../../content/learn'
-  import { PRESET_INFO } from '../../pedal/presets'
+  import { learnCopy } from '../../content/learn'
+  import { presetRecipes, recipeKeyLabel } from '../../content/presets'
+  import { FACTORY_PRESETS, PRESET_INFO } from '../../pedal/presets'
   import { hrefFor } from '../../router'
   import { pedal } from '../../state.svelte'
 
@@ -32,12 +33,13 @@
       <span class="text-xs tracking-[0.06em] text-subtle uppercase">{card.era}</span>
       <p class="m-0 text-sm leading-normal text-[#c9d1d9]">{card.why}</p>
       <ul class="m-0 flex list-none flex-wrap gap-1.5 p-0">
-        {#each card.keys as k (k.label)}
+        {#each card.keys as k (k.control)}
           <li>
             <a
               href={hrefFor({ name: 'learn', chapter: k.chapter })}
               class="inline-flex items-center gap-1 rounded-full border border-[#343d48] px-2 py-0.5 text-xs text-[#c9d1d9] no-underline hover:border-[#2f7f86]"
-              >{k.label} <span class="text-subtle">→ {learnCopy.recipeChapter(k.chapter)}</span></a
+              >{recipeKeyLabel(k, FACTORY_PRESETS[card.number - 1])}
+              <span class="text-subtle">→ {learnCopy.recipeChapter(k.chapter)}</span></a
             >
           </li>
         {/each}

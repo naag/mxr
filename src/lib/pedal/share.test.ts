@@ -11,6 +11,22 @@ describe('patch codes', () => {
     }
   })
 
+  it('carry the expression toe state (version 2)', () => {
+    const army = FACTORY_PRESETS[5]
+    const code = encodePatch(army)
+    expect(code).toMatch(/^2\..*\.1_80\.4_70$/)
+    expect(patchesEqual(decodePatch(code)!, army)).toBe(true)
+    for (const bad of [
+      `${code}.1_10`,
+      code.replace('.4_70', '.4_101'),
+      code.replace('.4_70', '.99_5'),
+      code.replace('.4_70', '.4_5_1'),
+      code.replace(/\.1_80\.4_70$/, ''),
+    ]) {
+      expect(decodePatch(bad)).toBeNull()
+    }
+  })
+
   it('reject malformed codes', () => {
     const good = encodePatch(FACTORY_PRESETS[0])
     for (const bad of [

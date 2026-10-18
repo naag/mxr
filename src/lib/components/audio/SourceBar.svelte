@@ -39,10 +39,15 @@
 
 <section
   aria-label={audioCopy.sourceLabel}
-  class="z-10 border-t border-[#1b2229] bg-[#0f1318]/95 backdrop-blur sm:sticky sm:bottom-0"
+  class={[
+    'z-10 border-t border-[#1b2229] bg-[#0f1318]/95 backdrop-blur',
+    // Sticky on every screen; on phones the fretboard is too tall, so it scrolls with the page.
+    audio.source === 'fretboard' ? 'sm:sticky sm:bottom-0' : 'sticky bottom-0',
+  ]}
+  data-testid="source-bar"
 >
-  <div class="mx-auto flex max-w-[1440px] flex-col gap-3 px-4 py-3 sm:px-7">
-    <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+  <div class="mx-auto flex max-w-[1440px] flex-col gap-3 px-4 py-2 sm:px-7 sm:py-3">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-3">
       <div
         role="group"
         aria-label={audioCopy.sourceLabel}
@@ -54,7 +59,7 @@
             aria-pressed={audio.source === s}
             onclick={() => audio.setSource(s)}
             class={[
-              'min-h-[34px] cursor-pointer rounded-[7px] px-3 text-[13px]',
+              'min-h-[38px] cursor-pointer rounded-[7px] px-2 text-[13px] sm:px-3',
               audio.source === s
                 ? 'bg-[rgba(242,169,59,0.16)] font-semibold text-[#f7c77a]'
                 : 'text-muted hover:text-text',
@@ -86,12 +91,14 @@
             >
           {/if}
         </button>
-        <label class="flex min-w-0 items-center gap-2 text-[13px] text-muted">
-          {audioCopy.riff}
+        <label
+          class="flex min-w-0 flex-[1_1_120px] items-center gap-2 text-[13px] text-muted sm:flex-none"
+        >
+          <span class="sr-only sm:not-sr-only">{audioCopy.riff}</span>
           <select
             value={audio.riffId}
             onchange={(e) => audio.setRiff(e.currentTarget.value)}
-            class="min-h-[38px] min-w-0 rounded-[9px] border border-[#2a313a] bg-raised px-2.5 text-[13.5px] text-text"
+            class="min-h-[40px] w-full min-w-0 rounded-[9px] border border-[#2a313a] bg-raised px-2.5 text-[13.5px] text-text sm:w-auto"
           >
             {#each RIFFS as r (r.id)}
               <option value={r.id}>{r.name}</option>
@@ -122,13 +129,13 @@
           >
         </div>
       {:else}
-        <p class="m-0 max-w-xl text-[12.5px] text-subtle">
+        <p class="m-0 hidden max-w-xl text-[12.5px] text-subtle sm:block">
           {audio.source === 'keyboard' ? audioCopy.keyboardHint : audioCopy.fretboardHint}
         </p>
       {/if}
 
       <p
-        class="m-0 ml-auto font-mono text-[12.5px] text-[#c9d1d9]"
+        class="m-0 ml-auto font-mono text-[12.5px] text-[#c9d1d9] max-sm:sr-only"
         aria-live="polite"
         data-testid="now-playing"
       >

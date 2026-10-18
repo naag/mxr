@@ -15,6 +15,7 @@ import { Noise, Oscillator, subOctave } from '../audio/dsp/oscillator'
 import { renderOffline, type NoteEvent } from '../audio/render'
 import type { Riff } from '../audio/riffs'
 import { ampAttackMs, cutoffHz, envelopeTimes, PARAM, stepIndex } from '../pedal/params'
+import { spectrogram, type SpectrogramData } from './spectrogram'
 
 /** Tap points the scope and spectrum can show. `out` is the pedal output (L+R)/2. */
 export type ScopeTap = 'osc' | 'filter' | 'amp' | 'out'
@@ -35,6 +36,8 @@ export const SAMPLE_RATE = 48000
 /** Control curves (cutoff, level, pitch) are kept at this rate. */
 export const CONTROL_RATE = 1000
 const PITCH_RATE = 8000
+/** Seconds between spectrogram columns in the computed view. */
+export const SPECTROGRAM_HOP = 0.01
 
 export interface EnvelopeCurve {
   /** Seconds per point. */
@@ -80,6 +83,8 @@ export interface Snapshot {
   cutoffNow: number
   envelope: EnvelopeCurve
   pitch: PitchCurve
+  /** The preview note at the output, over the envelope graph's length (detailed mode). */
+  spectrogram: SpectrogramData
   meter: {
     peakLeft: number
     peakRight: number
@@ -209,6 +214,7 @@ export function computeSnapshot(settings: PedalSettings, riff: Riff, bpm: number
       knobHz: cutoffHz(settings.patch.values.cutoff),
     },
     pitch: pitchCurve(settings, riff, bpm),
+    spectrogram: spectrogram(out.subarray(0, graph), sr, SPECTROGRAM_HOP),
     meter: {
       peakLeft: peakOf(r.left),
       peakRight: peakOf(r.right),

@@ -16,7 +16,7 @@
   const highlighted = $derived(linksFor(pedal.focused, pedal.layer).viz.includes('envelope'))
   const env = $derived(computed.snapshot?.envelope ?? null)
   const g = $derived(env ? envelopeGeometry(env, W) : null)
-  const values = $derived(pedal.state.current.values)
+  const values = $derived(pedal.sound.values)
 
   // Live playhead: time since the synth started the note, at the cutoff it has right now.
   const head = $derived.by(() => {

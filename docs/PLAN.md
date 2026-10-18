@@ -76,6 +76,7 @@ consistent everywhere in the app.
 | `#/learn/:chapter` | **Learn** | Guided chapters (see `learning-content.md`). |
 | `#/presets` | **Presets** | Gallery of the 8 presets as "recipe cards". |
 | `#/reference` | **Reference** | Manual-style reference: controls, secondary layer, glossary. |
+| `#/about` | **About** | What the project is, how close it is to the pedal, disclaimer. |
 
 The pedal and the sound-source bar stay mounted across views, so audio never stops
 on navigation. On wide screens the pedal is always visible. On mobile it collapses to a
@@ -660,17 +661,49 @@ control per layer and the glossary, with `#/reference/<term>` deep links. Learn 
 lazy-loaded. Chapter 13 has short recipe cards; the full gallery is Phase 8.
 
 ### Phase 8: Presets gallery & expression
-- [ ] Preset recipe cards (key knobs tagged with chapters, era/instrument context).
-- [ ] Virtual expression pedal with heel/toe editor and morph visualization.
-- [ ] Spectrogram (detailed mode).
+- [x] Preset recipe cards (key knobs tagged with chapters, era/instrument context).
+- [x] Virtual expression pedal with heel/toe editor and morph visualization.
+- [x] Spectrogram (detailed mode).
 - **Done when:** each preset card explains *why* it sounds the way it does.
 
+Notes: a `Patch` has an optional `toe` with only the parameters that differ from the heel
+(`values`); `morphPatch()` blends them and `effectivePatch()` in the machine applies the pedal
+position (heel without a pedal, the toe while editing it). The store's `pedal.sound` is what
+the audio engine and the computed visuals get; knobs show the state being edited. Editing uses
+an on-screen Heel/Toe switch (**ASSUMPTION**, reference §7); rocking the pedal ends a toe edit.
+Share codes gain a version 2 with `index_value` toe fields (version 1 links still open).
+ARMY OF SYNTH has the draft toe from reference §5. The pedal panel (`ExpressionPedal.svelte`)
+has the rocker (a slider), a sweep button, and heel → toe bars per morphing parameter; knobs
+with a toe state show a pink heel–toe arc with a dot at the sound you hear. The CTR jack's
+TAP/EXP vs AUDIO switch is a "Plug in" checkbox and doesn't gate STEREO. The recipe copy is in
+`content/presets.ts` (shared with Learn chapter 13); chips read their values from the preset
+data, and `presets.test.ts` checks each named ingredient really is set in the preset. The
+spectrogram (`viz/spectrogram.ts`, `Spectrogram.svelte`) shows the computed note with the
+cutoff over time, or scrolls live from the output analyser at 50 columns/s.
+
 ### Phase 9: Polish & launch
-- [ ] Responsive pass (all breakpoints), touch ergonomics, reduced motion.
-- [ ] Performance pass against §5.6, plus lazy loading.
-- [ ] Full a11y audit (keyboard-only and screen-reader walkthrough).
-- [ ] Open Graph image, favicon, about/disclaimer page, README screenshots.
+- [x] Responsive pass (all breakpoints), touch ergonomics, reduced motion.
+- [x] Performance pass against §5.6, plus lazy loading.
+- [x] A11y audit: keyboard-only walkthrough, names/roles/live regions review, axe on every view.
+- [ ] Screen-reader walkthrough by a person (VoiceOver and NVDA).
+- [x] Open Graph image, favicon, about/disclaimer page, README screenshots.
 - **Done when:** Lighthouse targets are met and there are no open P1 bugs.
+
+Notes: phones get a swipeable visual strip with tabs (Wave · Levels · Spectrum · Envelope ·
+Pitch), a scrollable nav row and a compact sticky source bar; `scroll-padding-bottom` keeps
+focused controls clear of the bar. Round pedal buttons have 44 px touch targets. With reduced
+motion, `motion.spec.ts` checks that no looping animation runs. Only Play is in the initial
+bundle (72 KB gzip; `npm run size` enforces 200 KB in CI) and Play mounts its visuals a frame
+after the pedal paints. Lighthouse 12 (mobile, throttled, production build): Performance 96,
+Accessibility 100, Best Practices 100. Keyboard: a skip link, and `shortcuts.ts` (pure, unit
+tested) for P / Shift+P, Space, M and `?` (a shortcut sheet in a native `<dialog>`);
+`keyboard.spec.ts` walks the pedal with the keyboard only. The audit found and fixed two bugs:
+the control caption resized as focus moved, so clicks below it could land on the wrong
+element, and `sr-only` labels in off-screen strip panels widened the page on phones. The
+screen-reader pass was a review of names, roles and live regions (axe on every view); a
+listening test with VoiceOver / NVDA by a person is still to do. `#/about` holds the
+disclaimer; `scripts/screenshots.mjs` regenerates the README screenshots, `og-image.png` and
+the touch icon.
 
 ### Phase 10 (stretch): Extras
 - [ ] "Recreate the preset" challenge with a similarity meter.
