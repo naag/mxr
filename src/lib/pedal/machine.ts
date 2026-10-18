@@ -10,6 +10,7 @@ import {
   normalize,
   PARAM,
   paramAt,
+  type ExpressionParamId,
   type GlobalParamId,
   type Layer,
   type ParamDef,
@@ -21,6 +22,7 @@ import {
   FACTORY_PRESETS,
   initialGlobals,
   initialLivePatch,
+  morphPatch,
   patchesEqual,
   PRESET_COUNT,
   SHAPES,
@@ -28,6 +30,21 @@ import {
   type Patch,
   type Shape,
 } from './presets'
+
+/** Which state of the expression pedal the knobs edit (reference §7). */
+export type ExpressionTarget = 'heel' | 'toe'
+
+export interface ExpressionState {
+  /** A pedal is plugged into CTR (with the side switch on TAP/EXP). */
+  connected: boolean
+  /** 0 = heel down, 1 = toe down. */
+  position: number
+  /**
+   * ASSUMPTION: the app edits the toe state with an on-screen Heel/Toe switch. While editing
+   * the toe, knobs set toe values and you hear the toe sound.
+   */
+  editing: ExpressionTarget
+}
 
 export const TIMING = {
   /** VOICE / SHAPE: a press shorter than this with no knob turned is a tap. */
@@ -73,6 +90,7 @@ export interface MachineState {
   frozen: boolean
   copy: { patch: Patch; until: number } | null
   confirm: { kind: 'saved' | 'reset' | 'factory'; until: number } | null
+  expression: ExpressionState
 }
 
 export type MachineEvent =
@@ -89,6 +107,11 @@ export type MachineEvent =
   | { type: 'set'; param: ParamId; value: number }
   | { type: 'setShape'; shape: Shape }
   | { type: 'setVoice'; on: boolean }
+  /** Expression pedal: plug in or out, rock it, pick heel or toe to edit, forget the toe. */
+  | { type: 'expressionConnect'; on: boolean }
+  | { type: 'expression'; position: number }
+  | { type: 'expressionEdit'; target: ExpressionTarget }
+  | { type: 'clearToe' }
 
 export function initialState(saved?: Patch[], globals?: Globals): MachineState {
   const list = saved ?? [initialLivePatch(), ...FACTORY_PRESETS.map(clonePatch)]
@@ -105,6 +128,7 @@ export function initialState(saved?: Patch[], globals?: Globals): MachineState {
     frozen: false,
     copy: null,
     confirm: null,
+    expression: { connected: false, position: 0, editing: 'heel' },
   }
 }
 
@@ -115,8 +139,26 @@ export function activeLayer(s: MachineState): Layer {
   return s.stickyLayer
 }
 
+/** True when knob turns go to the toe state. */
+const editingToe = (s: MachineState, p: ParamDef) =>
+  s.expression.editing === 'toe' && p.expressionable
+
+/** The value a knob shows: the heel value, or the toe value while editing the toe. */
 export function valueOf(s: MachineState, p: ParamDef): number {
-  return p.global ? s.globals[p.id as GlobalParamId] : s.current.values[p.id as PresetParamId]
+  if (p.global) return s.globals[p.id as GlobalParamId]
+  const id = p.id as PresetParamId
+  if (editingToe(s, p)) return s.current.toe?.[id as ExpressionParamId] ?? s.current.values[id]
+  return s.current.values[id]
+}
+
+/**
+ * The patch you hear: the heel state, morphed toward the toe by the expression pedal. While
+ * editing the toe you hear the toe. Without a pedal you get the heel state (manual).
+ */
+export function effectivePatch(s: MachineState): Patch {
+  const x = s.expression
+  if (!x.connected) return s.current
+  return morphPatch(s.current, x.editing === 'toe' ? 1 : x.position)
 }
 
 /** Live mode never counts as edited: it saves itself. */
@@ -145,6 +187,8 @@ export function reduce(state: MachineState, event: MachineEvent, now: number): M
       const p = paramAt(event.knob, activeLayer(s))
       // Live mode saves every change, so its "saved" value is the current one: use the
       // starting value instead.
+      // Editing the toe: back to the heel value, so this knob no longer morphs.
+      if (editingToe(s, p)) return turn(s, event.knob, s.current.values[p.id as PresetParamId])
       const saved =
         p.global || s.preset === 0
           ? PARAM[p.id].initial
@@ -181,12 +225,31 @@ export function reduce(state: MachineState, event: MachineEvent, now: number): M
       return edit(s, (p) => {
         p.voiceOn = event.on
       })
+    case 'expressionConnect':
+      return {
+        ...s,
+        expression: { connected: event.on, position: s.expression.position, editing: 'heel' },
+      }
+    case 'expression': {
+      const position = Math.min(1, Math.max(0, event.position))
+      // Rocking the pedal ends a toe edit: you hear the pedal again.
+      return { ...s, expression: { ...s.expression, position, editing: 'heel' } }
+    }
+    case 'expressionEdit':
+      if (!s.expression.connected) return s
+      return { ...s, expression: { ...s.expression, editing: event.target } }
+    case 'clearToe':
+      if (!s.current.toe) return s
+      return edit(s, (p) => {
+        delete p.toe
+      })
     case 'factoryReset': {
       const fresh = initialState()
       return {
         ...fresh,
         engaged: s.engaged,
         confirm: { kind: 'factory', until: now + TIMING.confirmMs },
+        expression: s.expression,
       }
     }
   }
@@ -234,6 +297,18 @@ function setParam(s: MachineState, p: ParamDef, raw: number): MachineState {
   if (p.global) {
     if (s.globals[p.id as GlobalParamId] === value) return s
     return { ...s, globals: { ...s.globals, [p.id]: value } }
+  }
+  if (editingToe(s, p)) {
+    const id = p.id as ExpressionParamId
+    if (valueOf(s, p) === value) return s
+    return edit(s, (patch) => {
+      const toe = { ...patch.toe }
+      // A toe value equal to the heel value means "doesn't morph": drop it.
+      if (Math.abs(value - patch.values[id]) < 1e-6) delete toe[id]
+      else toe[id] = value
+      if (Object.keys(toe).length > 0) patch.toe = toe
+      else delete patch.toe
+    })
   }
   if (s.current.values[p.id as PresetParamId] === value) return s
   return edit(s, (patch) => {

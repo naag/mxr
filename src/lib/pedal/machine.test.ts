@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   activeLayer,
+  effectivePatch,
   initialState,
   isModified,
   leds,
@@ -358,5 +359,75 @@ describe('ticking', () => {
     expect(needsTick(rig.s)).toBe(true)
     rig.send({ type: 'up', button: 'foot' })
     expect(needsTick(rig.s)).toBe(false)
+  })
+})
+
+describe('expression pedal (reference §7)', () => {
+  const connect = () => rig.send({ type: 'expressionConnect', on: true })
+
+  it('plays the heel state without a pedal, and morphs once one is plugged in', () => {
+    rig.send({ type: 'select', preset: 6 })
+    rig.send({ type: 'expression', position: 1 })
+    expect(effectivePatch(rig.s)).toBe(rig.s.current)
+    connect()
+    expect(effectivePatch(rig.s).values.cutoff).toBe(clock(15))
+    rig.send({ type: 'expression', position: 0.5 })
+    expect(effectivePatch(rig.s).values.cutoff).toBeCloseTo((clock(10) + clock(15)) / 2, 9)
+    // The knobs still show the heel state.
+    expect(valueOf(rig.s, PARAM.cutoff)).toBe(clock(10))
+  })
+
+  it('edits the toe state with the Heel/Toe switch, and you hear the toe meanwhile', () => {
+    rig.send({ type: 'expressionEdit', target: 'toe' })
+    expect(rig.s.expression.editing).toBe('heel') // needs a pedal
+    connect()
+    rig.send({ type: 'expressionEdit', target: 'toe' })
+    rig.turn('cutoff', 0.9)
+    expect(rig.s.current.values.cutoff).toBe(PARAM.cutoff.initial)
+    expect(rig.s.current.toe).toEqual({ cutoff: 0.9 })
+    expect(valueOf(rig.s, PARAM.cutoff)).toBe(0.9)
+    expect(effectivePatch(rig.s).values.cutoff).toBe(0.9)
+    // Live mode saves the toe too.
+    expect(rig.s.saved[0].toe).toEqual({ cutoff: 0.9 })
+  })
+
+  it('keeps SHAPE-layer settings out of the toe state', () => {
+    connect()
+    rig.send({ type: 'expressionEdit', target: 'toe' })
+    rig.send({ type: 'setLayer', layer: 'shape' })
+    rig.turn('mix', 0.8)
+    expect(rig.s.current.values.comp).toBe(0.8)
+    expect(rig.s.current.toe).toBeUndefined()
+  })
+
+  it('drops toe values equal to the heel; double-click resets the toe to the heel', () => {
+    connect()
+    rig.send({ type: 'expressionEdit', target: 'toe' })
+    rig.turn('mod', 0.7)
+    rig.turn('cutoff', 0.9)
+    rig.turn('mod', PARAM.mod.initial)
+    expect(rig.s.current.toe).toEqual({ cutoff: 0.9 })
+    rig.send({ type: 'resetKnob', knob: 'cutoff' })
+    expect(rig.s.current.toe).toBeUndefined()
+  })
+
+  it('ends a toe edit when the pedal moves or is unplugged', () => {
+    connect()
+    rig.send({ type: 'expressionEdit', target: 'toe' })
+    rig.send({ type: 'expression', position: 0.3 })
+    expect(rig.s.expression).toEqual({ connected: true, position: 0.3, editing: 'heel' })
+    rig.send({ type: 'expressionEdit', target: 'toe' })
+    rig.send({ type: 'expressionConnect', on: false })
+    expect(rig.s.expression.editing).toBe('heel')
+  })
+
+  it('flags a preset as edited when its toe changes, and can clear the toe', () => {
+    rig.send({ type: 'select', preset: 6 })
+    expect(isModified(rig.s)).toBe(false)
+    rig.send({ type: 'clearToe' })
+    expect(rig.s.current.toe).toBeUndefined()
+    expect(isModified(rig.s)).toBe(true)
+    rig.send({ type: 'select', preset: 6 })
+    expect(rig.s.current.toe).toEqual(FACTORY_PRESETS[5].toe)
   })
 })

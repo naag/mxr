@@ -1,10 +1,13 @@
-export type RouteName = 'play' | 'flow' | 'learn' | 'presets' | 'reference'
+export type RouteName = 'play' | 'flow' | 'learn' | 'presets' | 'reference' | 'about'
 
 export interface Route {
   name: RouteName
   /** Learn chapter, 0–13. Only set for the `learn` route. */
   chapter?: number
-  /** Optional sub-path: a flow stage (`#/flow/filter`) or a glossary term (`#/reference/cutoff`). */
+  /**
+   * Optional sub-path: a flow stage (`#/flow/filter`), a glossary term (`#/reference/cutoff`)
+   * or a preset (`#/presets/r2`).
+   */
   item?: string
 }
 
@@ -15,7 +18,10 @@ const simple: Record<string, RouteName> = {
   flow: 'flow',
   presets: 'presets',
   reference: 'reference',
+  about: 'about',
 }
+
+const WITH_ITEM: readonly RouteName[] = ['flow', 'reference', 'presets']
 
 /** Parses `location.hash` (e.g. `#/learn/5`) into a route. Unknown paths fall back to Play. */
 export function parseHash(hash: string): Route {
@@ -28,7 +34,7 @@ export function parseHash(hash: string): Route {
     return { name: 'learn', chapter }
   }
   const name = simple[head] ?? 'play'
-  if ((name === 'flow' || name === 'reference') && arg && /^[a-z0-9-]+$/.test(arg)) {
+  if (WITH_ITEM.includes(name) && arg && /^[a-z0-9-]+$/.test(arg)) {
     return { name, item: arg }
   }
   return { name }

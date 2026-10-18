@@ -32,6 +32,8 @@ export type ParamId =
 
 export type GlobalParamId = 'gateSens' | 'tracking' | 'outMode'
 export type PresetParamId = Exclude<ParamId, GlobalParamId>
+/** What an expression pedal can morph: the printed knobs and the VOICE layer. */
+export type ExpressionParamId = Exclude<PresetParamId, 'comp' | 'dryThru' | 'outGain'>
 
 export interface ParamDef {
   id: ParamId
@@ -119,6 +121,9 @@ export const PARAM: Record<ParamId, ParamDef> = Object.fromEntries(
 
 export const PRESET_PARAM_IDS = PARAMS.filter((p) => !p.global).map((p) => p.id) as PresetParamId[]
 export const GLOBAL_PARAM_IDS = PARAMS.filter((p) => p.global).map((p) => p.id) as GlobalParamId[]
+export const EXPRESSION_PARAM_IDS = PARAMS.filter((p) => p.expressionable).map(
+  (p) => p.id,
+) as ExpressionParamId[]
 
 const byKnobAndLayer = new Map(PARAMS.map((p) => [`${p.knob}/${p.layer}`, p]))
 

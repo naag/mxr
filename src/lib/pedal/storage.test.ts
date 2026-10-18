@@ -28,6 +28,17 @@ describe('pedal storage', () => {
     expect(back.saved.every((p, i) => patchesEqual(p, s.saved[i]))).toBe(true)
   })
 
+  it('remembers expression toe states', () => {
+    const mem = new MemoryStorage()
+    let s = initialState()
+    s = reduce(s, { type: 'expressionConnect', on: true }, 0)
+    s = reduce(s, { type: 'expressionEdit', target: 'toe' }, 0)
+    s = reduce(s, { type: 'turn', knob: 'cutoff', value: 0.95 }, 0)
+    savePedal(asStorage(mem), s.saved, s.globals)
+    expect(loadPedal(asStorage(mem))!.saved[0].toe).toEqual({ cutoff: 0.95 })
+    expect(loadPedal(asStorage(mem))!.saved[6].toe).toEqual(s.saved[6].toe)
+  })
+
   it('returns null for missing or corrupt data', () => {
     expect(loadPedal(null)).toBeNull()
     const mem = new MemoryStorage()

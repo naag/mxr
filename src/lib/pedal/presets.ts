@@ -8,6 +8,8 @@ import {
   GLOBAL_PARAM_IDS,
   PARAM,
   PRESET_PARAM_IDS,
+  EXPRESSION_PARAM_IDS,
+  type ExpressionParamId,
   type GlobalParamId,
   type PresetParamId,
 } from './params'
@@ -19,6 +21,11 @@ export interface Patch {
   shape: Shape
   voiceOn: boolean
   values: Record<PresetParamId, number>
+  /**
+   * Toe-down state for an expression pedal (reference §7): only the parameters that differ
+   * from the heel state (`values`). Missing or empty means the pedal changes nothing.
+   */
+  toe?: Partial<Record<ExpressionParamId, number>>
 }
 
 export type Globals = Record<GlobalParamId, number>
@@ -79,12 +86,21 @@ const RECIPE_BASE: ClockValues = {
   dryThru: 7,
 }
 
-function recipe(shape: Shape, voiceOn: boolean, hours: ClockValues): Patch {
+function recipe(
+  shape: Shape,
+  voiceOn: boolean,
+  hours: ClockValues,
+  toe?: Partial<Record<ExpressionParamId, number>>,
+): Patch {
   const values = initialValues()
   for (const [id, hour] of Object.entries({ ...RECIPE_BASE, ...hours })) {
     values[id as PresetParamId] = clock(hour)
   }
-  return { shape, voiceOn, values }
+  const patch: Patch = { shape, voiceOn, values }
+  if (toe) {
+    patch.toe = Object.fromEntries(Object.entries(toe).map(([id, hour]) => [id, clock(hour)]))
+  }
+  return patch
 }
 
 /** Factory presets 1–8 (index 0 is preset 1). */
@@ -128,16 +144,22 @@ export const FACTORY_PRESETS: readonly Patch[] = [
     modBlend: 8,
     comp: 15,
   }),
-  recipe('saw', true, {
-    mix: 15,
-    sub: 11,
-    cutoff: 10,
-    envelope: 10,
-    resonance: 12,
-    mod: 7,
-    voiceMix: 13,
-    comp: 14,
-  }),
+  // Manual: "use expression for intensity". Draft toe: CUTOFF 3 o'clock, RESONANCE 2.
+  recipe(
+    'saw',
+    true,
+    {
+      mix: 15,
+      sub: 11,
+      cutoff: 10,
+      envelope: 10,
+      resonance: 12,
+      mod: 7,
+      voiceMix: 13,
+      comp: 14,
+    },
+    { cutoff: 15, resonance: 14 },
+  ),
   recipe('square', true, {
     mix: 16,
     sub: 10,
@@ -161,10 +183,37 @@ export const FACTORY_PRESETS: readonly Patch[] = [
 ]
 
 export function clonePatch(p: Patch): Patch {
-  return { shape: p.shape, voiceOn: p.voiceOn, values: { ...p.values } }
+  const copy: Patch = { shape: p.shape, voiceOn: p.voiceOn, values: { ...p.values } }
+  if (p.toe && Object.keys(p.toe).length > 0) copy.toe = { ...p.toe }
+  return copy
+}
+
+const same = (a: number, b: number) => Math.abs(a - b) < 1e-6
+
+/** Toe value of a parameter: its own toe setting, or the heel value when it has none. */
+export const toeValue = (p: Patch, id: ExpressionParamId): number => p.toe?.[id] ?? p.values[id]
+
+/** The parameters whose toe state differs from the heel state, in parameter order. */
+export function toeChanges(p: Patch): ExpressionParamId[] {
+  return EXPRESSION_PARAM_IDS.filter((id) => !same(toeValue(p, id), p.values[id]))
 }
 
 export function patchesEqual(a: Patch, b: Patch): boolean {
   if (a.shape !== b.shape || a.voiceOn !== b.voiceOn) return false
-  return PRESET_PARAM_IDS.every((id) => Math.abs(a.values[id] - b.values[id]) < 1e-6)
+  if (!PRESET_PARAM_IDS.every((id) => same(a.values[id], b.values[id]))) return false
+  return EXPRESSION_PARAM_IDS.every((id) => same(toeValue(a, id), toeValue(b, id)))
+}
+
+/**
+ * The sound at an expression-pedal position: 0 = heel (the saved values), 1 = toe. Morphs
+ * every parameter with a toe state linearly; SHAPE, VOICE and the SHAPE layer stay put.
+ * Stepped VOICE-layer params don't exist, so no snapping is needed.
+ */
+export function morphPatch(p: Patch, position: number): Patch {
+  const t = Math.min(1, Math.max(0, position))
+  const changes = toeChanges(p)
+  if (t === 0 || changes.length === 0) return p
+  const values = { ...p.values }
+  for (const id of changes) values[id] = p.values[id] + (toeValue(p, id) - p.values[id]) * t
+  return { shape: p.shape, voiceOn: p.voiceOn, values }
 }

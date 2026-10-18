@@ -16,6 +16,8 @@ export function install() {
       levels: () => audio.engine.levels(),
       telemetry: () => audio.telemetry,
       pedalState: () => pedal.state,
+      /** The patch you hear (expression pedal applied). */
+      sound: () => pedal.sound,
       /** Deterministic render of a preset (0 = live) with clock-position overrides. */
       render(preset: number, overrides: Partial<Record<PresetParamId, number>> = {}) {
         const base = preset === 0 ? initialLivePatch() : FACTORY_PRESETS[preset - 1]

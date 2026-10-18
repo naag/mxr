@@ -8,11 +8,12 @@
   import { FLOW_STAGE, type FlowStageId } from './lib/viz/flow'
   import FlowView from './views/FlowView.svelte'
   import PlayView from './views/PlayView.svelte'
-  import PresetsView from './views/PresetsView.svelte'
 
-  // Learn and Reference carry most of the copy: load them when first opened (PLAN §5.6).
+  // Views other than Play and Under the hood load when first opened (PLAN §5.6).
   const learnView = () => import('./views/LearnView.svelte')
   const referenceView = () => import('./views/ReferenceView.svelte')
+  const presetsView = () => import('./views/PresetsView.svelte')
+  const aboutView = () => import('./views/AboutView.svelte')
 
   const route = $derived(router.route)
 
@@ -43,7 +44,11 @@
         <LearnView chapter={route.chapter ?? 0} />
       {/await}
     {:else if route.name === 'presets'}
-      <PresetsView />
+      {#await presetsView() then { default: PresetsView }}
+        {#key route.item}<PresetsView item={route.item ?? null} />{/key}
+      {/await}
+    {:else if route.name === 'about'}
+      {#await aboutView() then { default: AboutView }}<AboutView />{/await}
     {:else if route.name === 'reference'}
       {#await referenceView() then { default: ReferenceView }}
         <ReferenceView term={route.item ?? null} />

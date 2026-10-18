@@ -57,7 +57,7 @@
   const ignored = $derived(curve && !live ? curve.notes.filter((n) => !n.triggered).length : 0)
   const readout = $derived(
     pitchReadout({
-      glideMs: glideMs(pedal.state.current.values.glide),
+      glideMs: glideMs(pedal.sound.values.glide),
       nowMidi,
       frozen: pedal.state.frozen,
       ignored,

@@ -8,6 +8,8 @@ const views = [
   { hash: '#/presets', nav: 'Presets', heading: 'The eight factory sounds' },
   { hash: '#/reference', nav: 'Reference', heading: 'Every control on the pedal' },
 ]
+/** Every page, including the ones outside the header nav. */
+const pages = [...views, { hash: '#/about', nav: 'About', heading: 'About this project' }]
 
 test('loads without console errors @smoke', async ({ page }) => {
   const errors: string[] = []
@@ -40,6 +42,14 @@ test('deep links open the right view', async ({ page }) => {
   await expect(page.getByTestId('flow-inspector')).toHaveAttribute('data-stage', 'amp')
   await page.goto('./#/reference/cutoff')
   await expect(page.locator('[data-term="cutoff"]')).toHaveAttribute('data-current', 'true')
+  await page.goto('./#/presets/r4')
+  await expect(page.getByRole('heading', { name: /Synthmau5/ })).toBeFocused()
+})
+
+test('the footer links to the About page', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('link', { name: 'About & disclaimer' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('About this project')
 })
 
 test('has no horizontal scroll', async ({ page }) => {
@@ -50,7 +60,7 @@ test('has no horizontal scroll', async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(0)
 })
 
-for (const view of views) {
+for (const view of pages) {
   test(`${view.nav} has no serious accessibility violations`, async ({ page }) => {
     await page.goto(`./${view.hash}`)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

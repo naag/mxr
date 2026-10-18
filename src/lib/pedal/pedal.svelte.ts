@@ -1,6 +1,7 @@
 import type { KnobId } from './layout'
 import {
   activeLayer,
+  effectivePatch,
   initialState,
   isModified,
   leds,
@@ -8,6 +9,7 @@ import {
   reduce,
   valueOf,
   type Button,
+  type ExpressionTarget,
   type MachineEvent,
   type MachineState,
 } from './machine'
@@ -108,6 +110,16 @@ export class PedalStore {
   setShape = (shape: Shape) => this.dispatch({ type: 'setShape', shape })
   setVoice = (on: boolean) => this.dispatch({ type: 'setVoice', on })
   load = (patch: Patch) => this.dispatch({ type: 'load', patch })
+  connectExpression = (on: boolean) => this.dispatch({ type: 'expressionConnect', on })
+  setExpression = (position: number) => this.dispatch({ type: 'expression', position })
+  editExpression = (target: ExpressionTarget) => this.dispatch({ type: 'expressionEdit', target })
+  clearToe = () => this.dispatch({ type: 'clearToe' })
+
+  /** The patch you hear, with the expression pedal applied. */
+  get sound(): Patch {
+    return effectivePatch(this.state)
+  }
+
   /** A quick footswitch tap: synth on or off (outside preset scroll). */
   toggleBypass = () => {
     this.down('foot')

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ExpressionPedal from '../lib/components/expression/ExpressionPedal.svelte'
   import { holdKeyHandlers } from '../lib/components/pedal/hold-keys'
   import ControlCaption from '../lib/components/pedal/ControlCaption.svelte'
   import LayerToggle from '../lib/components/pedal/LayerToggle.svelte'
@@ -38,6 +39,7 @@
     </div>
     <LayerToggle {pedal} />
     <ControlCaption {pedal} />
+    <ExpressionPedal {pedal} />
     <ShareButton {pedal} />
   </div>
   <div class="flex min-w-0 flex-[999_1_560px] flex-col gap-4">

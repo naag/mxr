@@ -5,11 +5,13 @@ import {
   clonePatch,
   FACTORY_PRESETS,
   initialLivePatch,
+  morphPatch,
   patchesEqual,
   PRESET_COUNT,
   PRESET_INFO,
   presetInfo,
   SHAPES,
+  toeChanges,
 } from './presets'
 
 describe('factory presets', () => {
@@ -59,5 +61,37 @@ describe('patch helpers', () => {
     expect(a.values.mix).not.toBe(0)
     expect(patchesEqual(a, clonePatch(a))).toBe(true)
     expect(patchesEqual(a, b)).toBe(false)
+  })
+})
+
+describe('expression toe state', () => {
+  const army = FACTORY_PRESETS[5]
+
+  it('gives ARMY OF SYNTH a toe state (manual: "use expression for intensity")', () => {
+    expect(presetInfo(6)?.name).toBe('Army of Synth')
+    expect(toeChanges(army)).toEqual(['cutoff', 'resonance'])
+    expect(army.toe?.cutoff).toBe(clock(15))
+    for (const [i, p] of FACTORY_PRESETS.entries()) if (i !== 5) expect(toeChanges(p)).toEqual([])
+  })
+
+  it('morphs linearly from heel to toe and leaves other parameters alone', () => {
+    expect(morphPatch(army, 0)).toBe(army)
+    const half = morphPatch(army, 0.5)
+    expect(half.values.cutoff).toBeCloseTo((clock(10) + clock(15)) / 2, 9)
+    expect(morphPatch(army, 1).values.resonance).toBe(clock(14))
+    expect(morphPatch(army, 7).values.resonance).toBe(clock(14))
+    expect(half.values.mix).toBe(army.values.mix)
+    expect(half.shape).toBe(army.shape)
+  })
+
+  it('counts the toe state in equality and clones it', () => {
+    const copy = clonePatch(army)
+    expect(patchesEqual(copy, army)).toBe(true)
+    copy.toe!.cutoff = 0.2
+    expect(army.toe?.cutoff).toBe(clock(15))
+    expect(patchesEqual(copy, army)).toBe(false)
+    // A toe value equal to the heel value is the same as none.
+    const plain = initialLivePatch()
+    expect(patchesEqual({ ...plain, toe: { mix: plain.values.mix } }, plain)).toBe(true)
   })
 })
