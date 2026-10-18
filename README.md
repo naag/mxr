@@ -1,0 +1,30 @@
+# Bass Synth Explorer
+
+An interactive single-page web app that recreates the **MXR Bass Synth (MB301)** pedal
+on screen and uses it to explain **how synthesizers make sound**, for people
+who aren't synth experts. Turn a knob and hear the change, watch the waveform and
+spectrum react, and follow the signal through the pedal.
+
+> **Status:** planning. Nothing is implemented yet. Start with the plan.
+
+## Documents
+
+| Doc | What's in it |
+|---|---|
+| [`docs/PLAN.md`](docs/PLAN.md) | Vision, UX, visual design, architecture, testing strategy, phased roadmap, open questions |
+| [`docs/pedal-reference.md`](docs/pedal-reference.md) | The pedal's controls, secondary parameters, presets and signal flow (from the official manual) and how we model them |
+| [`docs/learning-content.md`](docs/learning-content.md) | Plain-language copy: control cards, Learn chapters, glossary, built-in riffs |
+
+## Planned stack
+
+Svelte 5 · TypeScript · Vite · Tailwind CSS v4 · Web Audio API + AudioWorklet ·
+Vitest · Playwright · GitHub Actions → GitHub Pages
+
+## Disclaimer
+
+This is an unofficial, non-commercial educational project. It isn't affiliated with,
+endorsed by, or sponsored by Dunlop Manufacturing, Inc. MXR® and related names are
+trademarks of their respective owners. The pedal drawing is original artwork, and the
+sound engine is an educational model, not the pedal's actual firmware. For the real
+thing, see the [official product page](https://www.jimdunlop.com/mxr-bass-synth/) and
+[user guide](https://www.jimdunlop.com/content/manuals/MB301.pdf).
