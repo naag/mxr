@@ -505,15 +505,17 @@ Each phase is **one reviewable PR** (or a small series), ends green in CI, and l
 the app deployable. Checkboxes track progress.
 
 ### Phase 0: Foundation & tooling
-- [ ] Scaffold Vite + Svelte 5 + TS (`npm create vite@latest -- --template svelte-ts`).
-- [ ] Tailwind v4 via `@tailwindcss/vite`, theme tokens from §4.2, self-hosted fonts.
-- [ ] ESLint + Prettier + `svelte-check`, plus an `.editorconfig`.
-- [ ] Vitest (node + browser mode) with one sample test each.
-- [ ] Playwright config (§7.3) with a smoke test, and the `PW_CHROMIUM_PATH` fallback.
-- [ ] App shell: header, hash router, empty views, footer disclaimer (§10).
-- [ ] GitHub Actions CI + Pages deploy. `CLAUDE.md` with conventions and pointers to these docs.
+- [x] Scaffold Vite + Svelte 5 + TS (`npm create vite@latest -- --template svelte-ts`).
+- [x] Tailwind v4 via `@tailwindcss/vite`, theme tokens from §4.2, self-hosted fonts.
+- [x] ESLint + Prettier + `svelte-check`, plus an `.editorconfig`.
+- [x] Vitest (node + browser mode) with one sample test each.
+- [x] Playwright config (§7.3) with a smoke test, and the `PW_CHROMIUM_PATH` fallback.
+- [x] App shell: header, hash router, empty views, footer disclaimer (§10).
+- [x] GitHub Actions CI + Pages deploy. `CLAUDE.md` with conventions and pointers to these docs.
 - [ ] Optional: Claude Code SessionStart hook that runs `npm ci` in cloud sessions.
 - **Done when:** `npm run test:all` passes locally and in CI, and the shell is live on Pages.
+  (Local: passing. CI and Pages run once the work is on `main` and Pages is set to deploy
+  from GitHub Actions.)
 
 ### Phase 1: The pedal (visual + interaction, no audio)
 - [ ] `Knob` (drag/wheel/keys, 300° sweep, clock formatting, ARIA), `PushButton`,
