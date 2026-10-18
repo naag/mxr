@@ -21,8 +21,8 @@ export const views: Record<
   play: {
     kicker: 'Play',
     title: 'Turn a knob, hear and see what it does',
-    lede: 'The pedal already works: turn the knobs and press the buttons. Sound, the live waveform and spectrum, and the built-in riffs come next.',
-    phase: 'Sound in Phase 4, visuals in Phase 5',
+    lede: 'Press Start sound, then play a riff or the fretboard at the bottom and turn the knobs. The live waveform and spectrum come next.',
+    phase: 'Visuals in Phase 5',
   },
   flow: {
     kicker: 'Under the hood',

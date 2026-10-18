@@ -49,3 +49,8 @@ now)`); parameters and their mappings in `params.ts`; factory presets in `preset
   returns every tap (dry, osc, filter, amp, fx, cutoffHz, pitch). DSP tests assert on
   measurements (pitch, harmonics, spectral centroid, RMS) from `dsp/analysis.ts`, with the
   tolerance stated in the test.
+- The `pedal` and `audio` stores are app-wide singletons in `src/lib/state.svelte.ts`;
+  `App.svelte` syncs pedal settings into the audio engine. The AudioWorklet only talks to the
+  main thread through the messages in `src/lib/audio/protocol.ts`.
+- E2E audio checks use `window.__MXR_TEST__` (test builds only, see `src/lib/test-hooks.ts`):
+  analyser levels per tap, telemetry, and deterministic offline renders.

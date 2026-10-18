@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte'
   import ControlCaption from '../lib/components/pedal/ControlCaption.svelte'
   import LayerToggle from '../lib/components/pedal/LayerToggle.svelte'
   import Pedal from '../lib/components/pedal/Pedal.svelte'
@@ -8,11 +7,7 @@
   import ViewPlaceholder from '../lib/components/ui/ViewPlaceholder.svelte'
   import { views } from '../lib/content/site'
   import type { Button } from '../lib/pedal/machine'
-  import { PedalStore } from '../lib/pedal/pedal.svelte'
-  import { patchFromHash } from '../lib/pedal/share'
-
-  const pedal = new PedalStore({ patch: patchFromHash(location.hash) })
-  onDestroy(() => pedal.destroy())
+  import { pedal } from '../lib/state.svelte'
 
   // Hold V or S on the keyboard to reach the VOICE or SHAPE layer.
   const holdKeys: Record<string, Button> = { v: 'voice', s: 'shape' }
