@@ -552,13 +552,19 @@ the keyboard reaches the VOICE / SHAPE layer. Factory reset (VOICE + SHAPE at po
 in the machine but has no front-panel trigger yet; the Reference view can offer it later.
 
 ### Phase 3: DSP core (pure TypeScript)
-- [ ] Oscillators (PolyBLEP saw/square, triangle), sub divider, voice oscs, noise.
-- [ ] 4-pole ZDF ladder with saturation and resonance compensation, 2× oversampling.
-- [ ] Filter envelope (AD), amp envelope, glide, LFO, chorus, compressor, gate, output gain.
-- [ ] Karplus–Strong virtual bass. `pedal-dsp.ts` composition with tap outputs.
-- [ ] Tests: DSP unit suite (§7.1), with numeric tolerances documented in each test.
+- [x] Oscillators (PolyBLEP saw/square, triangle), sub divider, voice oscs, noise.
+- [x] 4-pole ZDF ladder with saturation and resonance compensation, 2× oversampling.
+- [x] Filter envelope (AD), amp envelope, glide, LFO, chorus, compressor, gate, output gain.
+- [x] Karplus–Strong virtual bass. `pedal-dsp.ts` composition with tap outputs.
+- [x] Tests: DSP unit suite (§7.1), with numeric tolerances documented in each test.
 - **Done when:** offline renders of every preset pass sanity tests (no clipping before the
   limiter, no NaNs, expected spectra trends).
+
+Notes: code is in `src/lib/audio/dsp/` plus `src/lib/audio/render.ts` (offline render of
+every tap). It renders at about 5% of one CPU core at 48 kHz (budget: 15%). The ladder's
+oversampling interpolates the input linearly and averages the output; proper half-band
+filters can come later if aliasing is audible at high resonance. The triangle is naive (its
+harmonics fall at 12 dB/octave, so it aliases very little).
 
 ### Phase 4: Audio engine & sound sources
 - [ ] AudioWorklet wrapper, engine lifecycle (start/suspend/resume), master volume, limiter,

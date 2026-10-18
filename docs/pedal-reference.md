@@ -167,6 +167,23 @@ kept in `TIMING` in `src/lib/pedal/machine.ts`:
 | PRESETS cycle includes live mode | live → G1 … G4 → R1 … R4 → live |
 | Double-click a knob | back to the preset's saved value (live mode: the starting value) |
 
+### Sound-engine assumptions
+
+Also **ASSUMPTIONS**, kept as named constants in `src/lib/audio/dsp/pedal-dsp.ts` so they're
+easy to change after calibration (PLAN Phase 4b):
+
+| What | Model |
+|---|---|
+| VOICE intervals | +7 and +12 semitones, same wave as the main oscillator (`VOICE_INTERVALS`) |
+| Sub oscillator | square, one octave down, phase-locked to the main oscillator |
+| TRACKING delay before a note sounds | 5S 20 ms, 4S 12 ms, GTR 6 ms (`TRACKING_DELAY_MS`) |
+| GATE SENS. | notes softer than 0.3 × (1 − sensitivity) don't trigger the synth |
+| Amp | the synth's level follows the string (1 ms attack, 80 ms release), times AMP ENV |
+| MOD | LFO moves the cutoff by up to ±1.5 octaves × MOD × MOD BLEND; chorus depth is MOD × (1 − MOD BLEND) |
+| DRY THRU FX | the clean bass is also fed into the filter, then through amp, chorus and compression |
+| Freeze | holds the current level and pitch; releasing the string no longer stops the note |
+| Bypass | the clean signal in every output mode |
+
 ## 6. Footswitch freeze mode
 
 Hold the footswitch and turn RESONANCE to max: holding the footswitch now **freezes
