@@ -24,6 +24,8 @@ jobs:
       - run: npm run check
       - name: Production build has no test hooks
         run: npm run build && ! grep -rl "__MXR_TEST__" dist
+      - name: Initial JS within the performance budget
+        run: npm run size
       - run: npx playwright install --with-deps chromium
       - run: npm test
 

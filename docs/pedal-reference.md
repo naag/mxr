@@ -196,8 +196,14 @@ oscillators sounding at the frozen pitch and level until the footswitch is relea
 Each preset (and live mode) stores a **heel** state and a **toe** state. The
 expression pedal morphs between them. The heel state is also what you get without a
 pedal connected. Primary knobs and VOICE-layer parameters can be morphed; SHAPE-layer
-parameters can't. In the simulator: a virtual expression pedal (vertical slider)
-plus a "set heel / set toe" editor that shows which parameters differ.
+parameters can't. In the simulator: a virtual expression pedal (a rocker that works as a
+slider) plus a "set heel / set toe" editor that shows which parameters differ.
+
+- **ASSUMPTION:** how the toe state is set from the front panel. The app uses a Heel/Toe
+  switch: with Toe selected, knobs set toe values and you hear the toe sound; rocking the
+  pedal ends the toe edit.
+- **ASSUMPTION:** the morph is linear in knob position (0–1) for every parameter.
+- The toe state is saved per preset (and in live mode) like the rest of the patch.
 
 ## 8. Jacks & power
 

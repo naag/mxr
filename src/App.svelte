@@ -9,10 +9,10 @@
   import { keyContext, shortcutFor } from './lib/shortcuts'
   import { audio, computed, pedal, pedalSettings } from './lib/state.svelte'
   import { FLOW_STAGE, type FlowStageId } from './lib/viz/flow'
-  import FlowView from './views/FlowView.svelte'
   import PlayView from './views/PlayView.svelte'
 
-  // Views other than Play and Under the hood load when first opened (PLAN §5.6).
+  // Views other than Play load when first opened (PLAN §5.6).
+  const flowView = () => import('./views/FlowView.svelte')
   const learnView = () => import('./views/LearnView.svelte')
   const referenceView = () => import('./views/ReferenceView.svelte')
   const presetsView = () => import('./views/PresetsView.svelte')
@@ -67,7 +67,9 @@
     class="mx-auto w-full max-w-[1440px] flex-1 px-4 py-7 outline-none sm:px-7"
   >
     {#if route.name === 'flow'}
-      {#key flowStage}<FlowView stage={flowStage} />{/key}
+      {#await flowView() then { default: FlowView }}
+        {#key flowStage}<FlowView stage={flowStage} />{/key}
+      {/await}
     {:else if route.name === 'learn'}
       {#await learnView() then { default: LearnView }}
         <LearnView chapter={route.chapter ?? 0} />

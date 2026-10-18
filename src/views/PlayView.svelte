@@ -12,6 +12,8 @@
   import EnvelopeGraph from '../lib/viz/EnvelopeGraph.svelte'
   import LevelMeter from '../lib/viz/LevelMeter.svelte'
   import { knobsForViz, type VizId } from '../lib/viz/links'
+  import { onMount } from 'svelte'
+  import { prefersReducedMotion } from 'svelte/motion'
   import { MediaQuery } from 'svelte/reactivity'
   import PitchGraph from '../lib/viz/PitchGraph.svelte'
   import Scope from '../lib/viz/Scope.svelte'
@@ -21,6 +23,20 @@
   import Spectrum from '../lib/viz/Spectrum.svelte'
 
   const keys = holdKeyHandlers(pedal)
+
+  // Performance (PLAN §5.6): paint the pedal first, mount the visuals in the next task, so
+  // the first load isn't one long main-thread block.
+  let visualsReady = $state(false)
+  onMount(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const frame = requestAnimationFrame(() => {
+      timer = setTimeout(() => (visualsReady = true))
+    })
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(timer)
+    }
+  })
 
   // Phones (PLAN §2.4): the visuals become a swipeable strip with tabs.
   const phone = new MediaQuery('max-width: 767px')
@@ -36,7 +52,10 @@
   function show(id: VizId) {
     const panel = strip?.querySelector<HTMLElement>(`[data-viz="${id}"]`)
     if (!strip || !panel) return
-    strip.scrollTo({ left: panel.offsetLeft - strip.offsetLeft, behavior: 'smooth' })
+    strip.scrollTo({
+      left: panel.offsetLeft - strip.offsetLeft,
+      behavior: prefersReducedMotion.current ? 'instant' : 'smooth',
+    })
     shown = id
   }
 
@@ -112,16 +131,20 @@
       class="relative flex flex-col gap-4 max-md:-mx-4 max-md:snap-x max-md:snap-mandatory max-md:[scroll-padding-inline:16px] max-md:flex-row max-md:overflow-x-auto max-md:px-4"
       data-testid="viz-strip"
     >
-      <div class="flex flex-wrap gap-4 max-md:contents">
-        <Scope class="flex-[3_1_460px] {slide}" />
-        <LevelMeter class="flex-[2_1_260px] {slide}" />
-      </div>
-      <Spectrum class={slide} />
-      {#if viz.detailed}<Spectrogram class={slide} />{/if}
-      <div class="flex flex-wrap gap-4 max-md:contents">
-        <EnvelopeGraph class="flex-[1_1_360px] {slide}" />
-        <PitchGraph class="flex-[1_1_360px] {slide}" />
-      </div>
+      {#if visualsReady}
+        <div class="flex flex-wrap gap-4 max-md:contents">
+          <Scope class="flex-[3_1_460px] {slide}" />
+          <LevelMeter class="flex-[2_1_260px] {slide}" />
+        </div>
+        <Spectrum class={slide} />
+        {#if viz.detailed}<Spectrogram class={slide} />{/if}
+        <div class="flex flex-wrap gap-4 max-md:contents">
+          <EnvelopeGraph class="flex-[1_1_360px] {slide}" />
+          <PitchGraph class="flex-[1_1_360px] {slide}" />
+        </div>
+      {:else}
+        <div class="min-h-[1100px] max-md:min-h-[420px]" aria-hidden="true"></div>
+      {/if}
     </div>
   </div>
 </div>
